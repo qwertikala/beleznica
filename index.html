@@ -94,9 +94,12 @@
   .bz-keybox { display: flex; gap: 8px; align-items: center; }
   .bz-keybox input { flex: 1; }
   .bz-keynote { color: var(--muted); font-size: 11px; margin-top: 8px; line-height: 1.5; }
-  .bz-catchip { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; padding: 4px 8px 4px 10px; border-radius: 20px; margin: 0 6px 6px 0; }
-  .bz-catchip button { background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; font-size: 13px; line-height: 1; padding: 0; }
+  .bz-catchip { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; padding: 4px 6px 4px 10px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .bz-catchip button { background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; font-size: 13px; line-height: 1; padding: 0 2px; }
   .bz-catchip button:hover { opacity: 1; }
+  .bz-amount-btn { background: none; border: none; color: inherit; font: inherit; cursor: pointer; padding: 0; text-decoration: underline dotted; text-underline-offset: 2px; }
+  .bz-amount-input { background: var(--surface2); border: 1px solid var(--gold); border-radius: 4px; color: var(--text); font-size: 12.5px; padding: 2px 6px; width: 90px; text-align: right; font-family: Georgia, serif; }
+  .bz-pin-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 9px 12px; font-size: 15px; letter-spacing: 4px; text-align: center; width: 140px; }
   select.bz-input { -webkit-appearance: none; appearance: none; }
   a { color: var(--gold); }
 
@@ -164,7 +167,7 @@
     <button id="monthTodayBtn" style="display:none;">Ovaj mesec</button>
   </div>
   <div class="bz-summary">
-    <div class="bz-card balance"><div class="bz-card-label">Stanje</div><div class="bz-card-value" id="valBalance">0 RSD</div></div>
+    <div class="bz-card balance" id="balanceCard" style="cursor:pointer;"><div class="bz-card-label">Stanje 🔒</div><div class="bz-card-value" id="valBalance">••••••</div></div>
     <div class="bz-card income"><div class="bz-card-label">Prihodi</div><div class="bz-card-value" id="valIncome">0 RSD</div></div>
     <div class="bz-card expense"><div class="bz-card-label">Rashodi</div><div class="bz-card-value" id="valExpense">0 RSD</div></div>
   </div>
@@ -183,9 +186,15 @@
       <div class="bz-form-row" style="margin-top:8px;">
         <select class="bz-input" id="manualCategory" style="flex:1;"></select>
       </div>
-      <button class="bz-btn" type="submit">Dodaj</button>
+      <div class="bz-form-row" style="margin-top:8px;">
+        <select class="bz-input" id="manualPaymentMethod" style="flex:1;"></select>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; padding:9px 12px;" id="addPaymentMethodBtn">+</button>
+      </div>
+      <div class="bz-form-row" style="margin-top:12px;">
+        <button class="bz-btn" type="submit" style="margin-top:0; flex:1;">Dodaj</button>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="importImageBtn">📷 Uvezi sa slike</button>
+      </div>
     </form>
-    <button class="bz-btn ghost" id="importImageBtn" style="margin-top:10px;">📷 Uvezi sa slike (Wallet)</button>
     <input type="file" id="importImageInput" accept="image/*" style="display:none;" />
     <div class="bz-loading" id="ocrLoading" style="display:none;">Čitam sliku...</div>
     <div class="bz-error" id="errorMsg" style="display:none;"></div>
@@ -198,15 +207,6 @@
     <div class="bz-form-row" style="margin-top:12px;">
       <button class="bz-btn" id="confirmImportBtn">Uvezi izabrano</button>
       <button class="bz-btn ghost" style="margin-top:0;" id="cancelImportBtn">Otkaži</button>
-    </div>
-  </div>
-
-  <div class="bz-panel">
-    <div class="bz-section-title">Kategorije</div>
-    <div id="categoryChips"></div>
-    <div class="bz-form-row" style="margin-top:6px;">
-      <input class="bz-input desc" id="newCategoryInput" placeholder="Nova kategorija (npr. Radna prodavnica)" />
-      <button class="bz-btn" style="margin-top:0" id="addCategoryBtn">Dodaj</button>
     </div>
   </div>
 
@@ -224,6 +224,16 @@
     </div>
     <div id="txRows"><div class="bz-empty">Još nema unetih transakcija.</div></div>
     <div id="loadMoreWrap" style="text-align:center; margin-top:10px;"></div>
+  </div>
+
+  <div class="bz-panel">
+    <div class="bz-section-title">Kategorije</div>
+    <div class="bz-hint" style="margin-bottom:8px;">Strelicama menjaš redosled u padajućim menijima.</div>
+    <div id="categoryChips"></div>
+    <div class="bz-form-row" style="margin-top:6px;">
+      <input class="bz-input desc" id="newCategoryInput" placeholder="Nova kategorija (npr. Radna prodavnica)" />
+      <button class="bz-btn" style="margin-top:0" id="addCategoryBtn">Dodaj</button>
+    </div>
   </div>
   </div>
 
@@ -361,6 +371,7 @@
     state.editingId = null;
     state.visibleCount = 15;
     state.selectedMonth = todayISO().slice(0, 7);
+    state.balanceRevealed = false;
     var s = document.getElementById("searchInput"); if (s) s.value = "";
     render();
   }
@@ -405,6 +416,47 @@
     saveTransactions();
     render();
   }
+  function moveCategory(name, direction) {
+    var names = categoryNames();
+    var idx = names.indexOf(name);
+    var swapIdx = idx + direction;
+    if (swapIdx < 0 || swapIdx >= names.length) return;
+    var tmp = names[idx]; names[idx] = names[swapIdx]; names[swapIdx] = tmp;
+    var reordered = {};
+    names.forEach(function (n) { reordered[n] = state.categories[n]; });
+    state.categories = reordered;
+    saveCategories();
+    render();
+  }
+
+  var DEFAULT_PAYMENT_METHODS = ["Keš", "Kartica Intesa", "Kreditna kartica"];
+  function loadPaymentMethods() {
+    try {
+      var saved = JSON.parse(localStorage.getItem("bz_payment_methods") || "null");
+      if (saved && saved.length) return saved;
+    } catch (e) {}
+    return DEFAULT_PAYMENT_METHODS.slice();
+  }
+  function savePaymentMethods() {
+    localStorage.setItem("bz_payment_methods", JSON.stringify(state.paymentMethods));
+  }
+  function addPaymentMethod(name) {
+    name = (name || "").trim();
+    if (!name) return null;
+    if (state.paymentMethods.indexOf(name) === -1) {
+      state.paymentMethods.push(name);
+      savePaymentMethods();
+    }
+    return name;
+  }
+  function renderPaymentMethodSelect() {
+    var sel = document.getElementById("manualPaymentMethod");
+    var prevVal = sel.value;
+    sel.innerHTML = state.paymentMethods.map(function (m) {
+      return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>';
+    }).join("");
+    if (state.paymentMethods.indexOf(prevVal) !== -1) sel.value = prevVal;
+  }
 
   var state = {
     workspaces: [],
@@ -416,12 +468,17 @@
     busy: false,
     editingId: null,
     editingDateId: null,
+    editingAmountId: null,
     manualCategoryTouched: false,
     categoryFilter: null,
     searchQuery: "",
     visibleCount: 15,
-    selectedMonth: todayISO().slice(0, 7)
+    selectedMonth: todayISO().slice(0, 7),
+    paymentMethods: [],
+    balanceRevealed: false
   };
+
+  state.paymentMethods = loadPaymentMethods();
 
   state.workspaces = loadWorkspaces();
   state.activeWorkspace = localStorage.getItem("bz_active_workspace") || state.workspaces[0].id;
@@ -765,16 +822,25 @@
 
   function renderCategoryChips() {
     var container = document.getElementById("categoryChips");
-    container.innerHTML = categoryNames().map(function (cat) {
+    var names = categoryNames();
+    container.innerHTML = names.map(function (cat, i) {
       var color = state.categories[cat];
       var protectedCat = PROTECTED_CATEGORIES.indexOf(cat) !== -1;
       return '<span class="bz-catchip" style="background:' + color + '26;color:' + color + '">' +
-        escapeHtml(cat) +
+        (i > 0 ? '<button data-catup="' + cat + '" title="Pomeri gore">↑</button>' : '') +
+        (i < names.length - 1 ? '<button data-catdown="' + cat + '" title="Pomeri dole">↓</button>' : '') +
+        ' ' + escapeHtml(cat) +
         (protectedCat ? '' : ' <button data-delcat="' + cat + '" title="Obriši kategoriju">×</button>') +
         '</span>';
     }).join("");
     Array.prototype.forEach.call(container.querySelectorAll("[data-delcat]"), function (btn) {
       btn.addEventListener("click", function () { deleteCategory(btn.getAttribute("data-delcat")); });
+    });
+    Array.prototype.forEach.call(container.querySelectorAll("[data-catup]"), function (btn) {
+      btn.addEventListener("click", function () { moveCategory(btn.getAttribute("data-catup"), -1); });
+    });
+    Array.prototype.forEach.call(container.querySelectorAll("[data-catdown]"), function (btn) {
+      btn.addEventListener("click", function () { moveCategory(btn.getAttribute("data-catdown"), 1); });
     });
   }
 
@@ -811,6 +877,7 @@
     renderCategoryChips();
     renderManualCategorySelect();
     renderFilterCategorySelect();
+    renderPaymentMethodSelect();
 
     document.getElementById("monthLabel").textContent = monthLabel(state.selectedMonth);
     var currentMonth = todayISO().slice(0, 7);
@@ -829,7 +896,7 @@
         byCategory[c] = (byCategory[c] || 0) + Math.abs(t.amount);
       }
     });
-    document.getElementById("valBalance").textContent = (balance >= 0 ? "" : "-") + fmt(balance);
+    document.getElementById("valBalance").textContent = state.balanceRevealed ? ((balance >= 0 ? "" : "-") + fmt(balance)) : "••••••";
     document.getElementById("valIncome").textContent = fmt(income);
     document.getElementById("valExpense").textContent = fmt(expense);
 
@@ -905,14 +972,22 @@
           dateHtml = '<button class="bz-date-btn" data-editdate="' + t.id + '" title="Promeni datum">' + t.date.slice(5) + '</button>';
         }
         var receiptBtn = '<button class="bz-receipt-btn' + (t.receipt ? ' has' : '') + '" data-receipt="' + t.id + '" title="' + (t.receipt ? "Pogledaj račun" : "Dodaj fiskalni račun") + '">' + (t.receipt ? "🧾" : "＋") + '</button>';
+        var amountHtml;
+        if (state.editingAmountId === t.id) {
+          amountHtml = '<input type="number" step="0.01" class="bz-amount-input" data-amountedit="' + t.id + '" value="' + Math.abs(t.amount) + '" />';
+        } else {
+          amountHtml = '<button class="bz-amount-btn bz-amount ' + (t.amount >= 0 ? "pos" : "neg") + '" data-editamount="' + t.id + '" title="Promeni iznos">' + (t.amount >= 0 ? "+" : "-") + fmt(t.amount) + '</button>';
+        }
+        var payTag = t.paymentMethod ? '<span style="color:var(--muted); font-size:10.5px;">' + escapeHtml(t.paymentMethod) + '</span>' : '';
         return '<div class="bz-row">' +
           '<div class="bz-row-top">' +
           '<span class="bz-desc" data-toggledesc="' + t.id + '">' + escapeHtml(t.description) + '</span>' +
-          '<span class="bz-amount ' + (t.amount >= 0 ? "pos" : "neg") + '">' + (t.amount >= 0 ? "+" : "-") + fmt(t.amount) + '</span>' +
+          amountHtml +
           '</div>' +
           '<div class="bz-row-bottom">' +
           dateHtml +
           chipHtml +
+          payTag +
           '<span class="bz-row-bottom-spacer"></span>' +
           receiptBtn +
           '<button class="bz-del" data-del="' + t.id + '">×</button>' +
@@ -932,6 +1007,32 @@
 
     Array.prototype.forEach.call(txContainer.querySelectorAll("[data-toggledesc]"), function (el) {
       el.addEventListener("click", function () { el.classList.toggle("expanded"); });
+    });
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-editamount]"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.editingAmountId = btn.getAttribute("data-editamount");
+        render();
+      });
+    });
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-amountedit]"), function (inp) {
+      inp.addEventListener("change", function () {
+        var id = inp.getAttribute("data-amountedit");
+        var t = state.transactions.filter(function (t) { return t.id === id; })[0];
+        var newVal = parseFloat(inp.value);
+        if (t && !isNaN(newVal) && Math.abs(t.amount) !== newVal) {
+          var sign = t.amount >= 0 ? 1 : -1;
+          if (confirm("Promeniti iznos transakcije „" + t.description + "” sa " + fmt(t.amount) + " na " + fmt(newVal) + "?")) {
+            t.amount = sign * Math.abs(newVal);
+            saveTransactions();
+          }
+        }
+        state.editingAmountId = null;
+        render();
+      });
+      inp.addEventListener("blur", function () {
+        state.editingAmountId = null;
+        render();
+      });
     });
     Array.prototype.forEach.call(txContainer.querySelectorAll("[data-editdate]"), function (btn) {
       btn.addEventListener("click", function () {
@@ -1028,10 +1129,11 @@
     var descEl = document.getElementById("manualDesc");
     var amountEl = document.getElementById("manualAmount");
     var catEl = document.getElementById("manualCategory");
+    var payEl = document.getElementById("manualPaymentMethod");
     var val = parseFloat(String(amountEl.value).replace(",", "."));
     if (!descEl.value.trim() || isNaN(val) || val === 0) { showError("Unesi opis i validan iznos."); return; }
     var chosenCategory = catEl.value || null;
-    var t = { id: uid(), description: descEl.value.trim(), amount: signMode === "expense" ? -Math.abs(val) : Math.abs(val), date: todayISO(), category: chosenCategory };
+    var t = { id: uid(), description: descEl.value.trim(), amount: signMode === "expense" ? -Math.abs(val) : Math.abs(val), date: todayISO(), category: chosenCategory, paymentMethod: payEl.value || null };
     state.transactions = [t].concat(state.transactions);
     saveTransactions();
     descEl.value = ""; amountEl.value = ""; state.manualCategoryTouched = false;
@@ -1093,6 +1195,36 @@
     state.selectedMonth = todayISO().slice(0, 7);
     state.visibleCount = 15;
     render();
+  });
+  document.getElementById("balanceCard").addEventListener("click", function () {
+    if (state.balanceRevealed) { state.balanceRevealed = false; render(); return; }
+    var savedPin = localStorage.getItem("bz_pin");
+    if (!savedPin) {
+      var newPin = prompt("Postavi šifru (4+ cifre) za prikaz stanja:");
+      if (!newPin || newPin.trim().length < 4) { if (newPin !== null) alert("Šifra mora imati bar 4 cifre."); return; }
+      var confirmPin = prompt("Ponovi šifru radi potvrde:");
+      if (newPin.trim() !== confirmPin) { alert("Šifre se ne poklapaju, pokušaj ponovo."); return; }
+      localStorage.setItem("bz_pin", newPin.trim());
+      state.balanceRevealed = true;
+      render();
+      return;
+    }
+    var entered = prompt("Unesi šifru za prikaz stanja:");
+    if (entered === null) return;
+    if (entered.trim() === savedPin) {
+      state.balanceRevealed = true;
+      render();
+    } else {
+      alert("Pogrešna šifra.");
+    }
+  });
+  document.getElementById("addPaymentMethodBtn").addEventListener("click", function () {
+    var name = prompt("Naziv novog računa/kartice (npr. Banca Intesa tekući, Naxis kartica):");
+    var added = addPaymentMethod(name);
+    if (added) {
+      renderPaymentMethodSelect();
+      document.getElementById("manualPaymentMethod").value = added;
+    }
   });
   document.getElementById("lightboxClose").addEventListener("click", function () {
     document.getElementById("lightbox").style.display = "none";
