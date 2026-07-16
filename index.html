@@ -240,11 +240,6 @@
     <div id="catRows"></div>
   </div>
 
-  <div class="bz-panel" id="payPanel" style="display:none;">
-    <div class="bz-section-title">Rashodi po načinu plaćanja</div>
-    <div id="payRows"></div>
-  </div>
-
   <div class="bz-panel">
     <div class="bz-section-title" id="txSectionTitle">Sve transakcije</div>
     <div class="bz-form-row" style="margin-bottom:8px;">
@@ -258,6 +253,13 @@
     <div id="filterSumLine" style="display:none;"></div>
     <div id="txRows"><div class="bz-empty">Još nema unetih transakcija.</div></div>
     <div id="loadMoreWrap" style="text-align:center; margin-top:10px;"></div>
+  </div>
+
+  <div class="bz-panel" id="payPanel" style="display:none;">
+    <button class="bz-btn ghost" id="payToggleBtn" style="margin-top:0; width:100%;">Prikaži rashode po načinu plaćanja ▾</button>
+    <div id="payRowsWrap" style="display:none; margin-top:12px;">
+      <div id="payRows"></div>
+    </div>
   </div>
 
   <div class="bz-panel">
@@ -524,6 +526,7 @@
     selectedMonth: todayISO().slice(0, 7),
     paymentMethods: [],
     paymentFilter: null,
+    payExpanded: false,
     balanceRevealed: false
   };
 
@@ -1015,6 +1018,10 @@
       payPanel.style.display = "none";
     } else {
       payPanel.style.display = "block";
+      var toggleBtn = document.getElementById("payToggleBtn");
+      var wrap = document.getElementById("payRowsWrap");
+      toggleBtn.textContent = state.payExpanded ? "Sakrij rashode po načinu plaćanja ▴" : "Prikaži rashode po načinu plaćanja ▾";
+      wrap.style.display = state.payExpanded ? "block" : "none";
       var maxPay = Math.max.apply(null, payEntries.map(function (e) { return e[1]; }).concat([1]));
       var payHtml = payEntries.map(function (entry) {
         var pay = entry[0], val = entry[1];
@@ -1030,6 +1037,7 @@
           var pay = row.getAttribute("data-payfilter");
           state.paymentFilter = state.paymentFilter === pay ? null : pay;
           state.visibleCount = 15;
+          state.payExpanded = true;
           render();
         });
       });
@@ -1332,6 +1340,10 @@
     state.searchQuery = "";
     state.visibleCount = 15;
     document.getElementById("searchInput").value = "";
+    render();
+  });
+  document.getElementById("payToggleBtn").addEventListener("click", function () {
+    state.payExpanded = !state.payExpanded;
     render();
   });
   document.getElementById("monthPrevBtn").addEventListener("click", function () {
