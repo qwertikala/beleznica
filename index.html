@@ -212,6 +212,7 @@
       <button class="bz-btn ghost" style="margin-top:0" id="clearFiltersBtn">Očisti</button>
     </div>
     <div id="txRows"><div class="bz-empty">Još nema unetih transakcija.</div></div>
+    <div id="loadMoreWrap" style="text-align:center; margin-top:10px;"></div>
   </div>
   </div>
 
@@ -347,6 +348,7 @@
     state.categoryFilter = null;
     state.searchQuery = "";
     state.editingId = null;
+    state.visibleCount = 15;
     var s = document.getElementById("searchInput"); if (s) s.value = "";
     render();
   }
@@ -404,7 +406,8 @@
     editingDateId: null,
     manualCategoryTouched: false,
     categoryFilter: null,
-    searchQuery: ""
+    searchQuery: "",
+    visibleCount: 15
   };
 
   state.workspaces = loadWorkspaces();
@@ -820,6 +823,7 @@
         row.addEventListener("click", function () {
           var cat = row.getAttribute("data-catfilter");
           state.categoryFilter = state.categoryFilter === cat ? null : cat;
+          state.visibleCount = 15;
           render();
         });
       });
@@ -840,7 +844,8 @@
       if (q && normalizeText(t.description).indexOf(q) === -1) return false;
       return true;
     });
-    var sorted = filtered.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var sortedAll = filtered.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var sorted = sortedAll.slice(0, state.visibleCount);
     var txContainer = document.getElementById("txRows");
     if (sorted.length === 0) {
       txContainer.innerHTML = '<div class="bz-empty">' + (state.categoryFilter || q ? "Nema transakcija koje odgovaraju filteru." : "Još nema unetih transakcija.") + '</div>';
@@ -878,6 +883,17 @@
           '</div></div>';
       }).join("");
     }
+    var loadMoreWrap = document.getElementById("loadMoreWrap");
+    if (sortedAll.length > state.visibleCount) {
+      loadMoreWrap.innerHTML = '<button class="bz-btn ghost" id="loadMoreBtn" style="margin-top:0;">Učitaj još (' + (sortedAll.length - state.visibleCount) + ' preostalo)</button>';
+      document.getElementById("loadMoreBtn").addEventListener("click", function () {
+        state.visibleCount += 15;
+        render();
+      });
+    } else {
+      loadMoreWrap.innerHTML = "";
+    }
+
     Array.prototype.forEach.call(txContainer.querySelectorAll("[data-toggledesc]"), function (el) {
       el.addEventListener("click", function () { el.classList.toggle("expanded"); });
     });
@@ -1010,15 +1026,18 @@
 
   document.getElementById("searchInput").addEventListener("input", function () {
     state.searchQuery = this.value;
+    state.visibleCount = 15;
     render();
   });
   document.getElementById("filterCategorySelect").addEventListener("change", function () {
     state.categoryFilter = this.value || null;
+    state.visibleCount = 15;
     render();
   });
   document.getElementById("clearFiltersBtn").addEventListener("click", function () {
     state.categoryFilter = null;
     state.searchQuery = "";
+    state.visibleCount = 15;
     document.getElementById("searchInput").value = "";
     render();
   });
