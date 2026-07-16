@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="sr">
 <head>
@@ -143,42 +144,31 @@
   </div>
 
   <div class="bz-panel">
+    <div class="bz-section-title">Dodaj transakciju</div>
+    <form id="manualForm">
+      <div class="bz-form-row">
+        <input class="bz-input desc" id="manualDesc" placeholder="Opis" />
+        <input class="bz-input amount" id="manualAmount" placeholder="Iznos" inputmode="decimal" />
+        <div class="bz-sign">
+          <button type="button" class="expense active" id="signExpense">Trošak</button>
+          <button type="button" class="income" id="signIncome">Prihod</button>
+        </div>
+      </div>
+      <div class="bz-form-row" style="margin-top:8px;">
+        <select class="bz-input" id="manualCategory" style="flex:1;"></select>
+      </div>
+      <button class="bz-btn" type="submit">Dodaj</button>
+    </form>
+    <div class="bz-error" id="errorMsg" style="display:none;"></div>
+  </div>
+
+  <div class="bz-panel">
     <div class="bz-section-title">Kategorije</div>
     <div id="categoryChips"></div>
     <div class="bz-form-row" style="margin-top:6px;">
       <input class="bz-input desc" id="newCategoryInput" placeholder="Nova kategorija (npr. Radna prodavnica)" />
       <button class="bz-btn" style="margin-top:0" id="addCategoryBtn">Dodaj</button>
     </div>
-  </div>
-
-  <div class="bz-tabs">
-    <button class="bz-tab active" id="tabPasteBtn">Nalepi transakcije</button>
-    <button class="bz-tab" id="tabManualBtn">Dodaj ručno</button>
-  </div>
-
-  <div class="bz-panel">
-    <div class="bz-tabpage active" id="pastePage">
-      <textarea class="bz-textarea" id="pasteText" placeholder="Maxi -2500&#10;Struja -4200&#10;Plata +85000"></textarea>
-      <div class="bz-hint">Jedna transakcija po redu: opis pa iznos. „-“ = trošak, „+“ = prihod. Kategorija se pogađa automatski, promeniš je klikom na nju u listi ispod.</div>
-      <button class="bz-btn" id="pasteSubmit">Dodaj i kategoriši</button>
-    </div>
-    <div class="bz-tabpage" id="manualPage">
-      <form id="manualForm">
-        <div class="bz-form-row">
-          <input class="bz-input desc" id="manualDesc" placeholder="Opis" />
-          <input class="bz-input amount" id="manualAmount" placeholder="Iznos" inputmode="decimal" />
-          <div class="bz-sign">
-            <button type="button" class="expense active" id="signExpense">Trošak</button>
-            <button type="button" class="income" id="signIncome">Prihod</button>
-          </div>
-        </div>
-        <div class="bz-form-row" style="margin-top:8px;">
-          <select class="bz-input" id="manualCategory" style="flex:1;"></select>
-        </div>
-        <button class="bz-btn" type="submit">Dodaj</button>
-      </form>
-    </div>
-    <div class="bz-error" id="errorMsg" style="display:none;"></div>
   </div>
 
   <div class="bz-panel" id="catPanel" style="display:none;">
@@ -408,29 +398,6 @@
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
-  }
-
-  function parsePastedLines(text) {
-    var lines = text.split("\n").map(function (l) { return l.trim(); }).filter(Boolean);
-    var out = [];
-    for (var i = 0; i < lines.length; i++) {
-      var line = lines[i];
-      var m = line.match(/([+-]?\d[\d.,\s]*)\s*(rsd|din\.?)?\s*$/i);
-      if (!m) continue;
-      var raw = m[1].replace(/\s/g, "");
-      var sign = 1;
-      if (raw.indexOf("-") === 0) { sign = -1; raw = raw.slice(1); }
-      else if (raw.indexOf("+") === 0) { raw = raw.slice(1); }
-      else { sign = -1; }
-      if (raw.indexOf(",") !== -1) raw = raw.replace(/\./g, "").replace(",", ".");
-      else raw = raw.replace(/\./g, "");
-      var amount = parseFloat(raw);
-      if (isNaN(amount)) continue;
-      var description = line.slice(0, m.index).trim().replace(/[:\-–]+$/, "").trim();
-      if (!description) description = "Nepoznata stavka";
-      out.push({ id: uid(), description: description, amount: sign * Math.abs(amount), date: todayISO(), category: null });
-    }
-    return out;
   }
 
   function showError(msg) {
@@ -799,32 +766,6 @@
       });
     });
   }
-
-  document.getElementById("tabPasteBtn").addEventListener("click", function () {
-    state.tab = "paste";
-    document.getElementById("tabPasteBtn").classList.add("active");
-    document.getElementById("tabManualBtn").classList.remove("active");
-    document.getElementById("pastePage").classList.add("active");
-    document.getElementById("manualPage").classList.remove("active");
-  });
-  document.getElementById("tabManualBtn").addEventListener("click", function () {
-    state.tab = "manual";
-    document.getElementById("tabManualBtn").classList.add("active");
-    document.getElementById("tabPasteBtn").classList.remove("active");
-    document.getElementById("manualPage").classList.add("active");
-    document.getElementById("pastePage").classList.remove("active");
-  });
-
-  document.getElementById("pasteSubmit").addEventListener("click", function () {
-    var textEl = document.getElementById("pasteText");
-    var parsed = parsePastedLines(textEl.value);
-    if (parsed.length === 0) { showError("Nisam prepoznao nijednu transakciju. Format: opis pa iznos, npr. „Maxi -2500“."); return; }
-    state.transactions = parsed.concat(state.transactions);
-    saveTransactions();
-    textEl.value = "";
-    render();
-    runCategorization(parsed);
-  });
 
   var signMode = "expense";
   document.getElementById("signExpense").addEventListener("click", function () {
