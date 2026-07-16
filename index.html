@@ -62,6 +62,9 @@
   .bz-receipt-btn.has { color: var(--gold); border-color: var(--gold); }
   .bz-row:last-child { border-bottom: none; }
   .bz-date { color: var(--muted); font-size: 10.5px; }
+  .bz-date-btn { background: none; border: none; color: var(--muted); font-size: 10.5px; cursor: pointer; padding: 2px 4px; font-family: inherit; text-decoration: underline dotted; text-underline-offset: 2px; }
+  .bz-date-btn:hover { color: var(--gold); }
+  .bz-date-input { background: var(--surface2); border: 1px solid var(--gold); border-radius: 4px; color: var(--text); font-size: 10px; padding: 2px; font-family: inherit; width: 100%; }
   .bz-desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bz-chip { font-size: 10.5px; padding: 3px 8px; border-radius: 20px; cursor: pointer; width: fit-content; border: none; font-family: inherit; }
   .bz-amount { font-family: Georgia, serif; text-align: right; font-size: 12.5px; }
@@ -373,6 +376,7 @@
     tab: "paste",
     busy: false,
     editingId: null,
+    editingDateId: null,
     manualCategoryTouched: false,
     categoryFilter: null,
     searchQuery: ""
@@ -702,9 +706,15 @@
           chipHtml = '<button class="bz-chip" data-editcat="' + t.id + '" style="background:' + color + '26;color:' + color + '">' +
             escapeHtml(t.category || (state.busy ? "..." : "?")) + '</button>';
         }
+        var dateHtml;
+        if (state.editingDateId === t.id) {
+          dateHtml = '<input type="date" class="bz-date-input" data-dateedit="' + t.id + '" value="' + t.date + '" />';
+        } else {
+          dateHtml = '<button class="bz-date-btn" data-editdate="' + t.id + '" title="Promeni datum">' + t.date.slice(5) + '</button>';
+        }
         var receiptBtn = '<button class="bz-receipt-btn' + (t.receipt ? ' has' : '') + '" data-receipt="' + t.id + '" title="' + (t.receipt ? "Pogledaj račun" : "Dodaj fiskalni račun") + '">' + (t.receipt ? "🧾" : "＋") + '</button>';
         return '<div class="bz-row">' +
-          '<span class="bz-date">' + t.date.slice(5) + '</span>' +
+          dateHtml +
           '<span class="bz-desc">' + escapeHtml(t.description) + '</span>' +
           chipHtml +
           '<span class="bz-amount ' + (t.amount >= 0 ? "pos" : "neg") + '">' + (t.amount >= 0 ? "+" : "-") + fmt(t.amount) + '</span>' +
@@ -713,6 +723,30 @@
           '</div>';
       }).join("");
     }
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-editdate]"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.editingDateId = btn.getAttribute("data-editdate");
+        render();
+      });
+    });
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-dateedit]"), function (inp) {
+      inp.addEventListener("change", function () {
+        var id = inp.getAttribute("data-dateedit");
+        var t = state.transactions.filter(function (t) { return t.id === id; })[0];
+        if (t && inp.value && inp.value !== t.date) {
+          if (confirm("Promeniti datum transakcije „" + t.description + "” sa " + t.date + " na " + inp.value + "?")) {
+            t.date = inp.value;
+            saveTransactions();
+          }
+        }
+        state.editingDateId = null;
+        render();
+      });
+      inp.addEventListener("blur", function () {
+        state.editingDateId = null;
+        render();
+      });
+    });
     Array.prototype.forEach.call(txContainer.querySelectorAll("[data-receipt]"), function (btn) {
       btn.addEventListener("click", function () {
         var id = btn.getAttribute("data-receipt");
