@@ -57,8 +57,13 @@
   .bz-catrow { display: grid; grid-template-columns: 90px 1fr 80px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12px; }
   .bz-catbar-track { background: var(--surface2); border-radius: 3px; height: 8px; overflow: hidden; }
   .bz-catbar-fill { height: 100%; border-radius: 3px; }
-  .bz-row { display: grid; grid-template-columns: 58px 1fr 100px 90px 26px 24px; gap: 6px; align-items: center; padding: 9px 2px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
-  .bz-receipt-btn { background: none; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); cursor: pointer; font-size: 13px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .bz-row { padding: 10px 2px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .bz-row-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+  .bz-desc { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; min-width: 0; }
+  .bz-desc.expanded { white-space: normal; word-break: break-word; }
+  .bz-row-bottom { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .bz-row-bottom-spacer { flex: 1; }
+  .bz-receipt-btn { background: none; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); cursor: pointer; font-size: 13px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; }
   .bz-receipt-btn.has { color: var(--gold); border-color: var(--gold); }
   .bz-row:last-child { border-bottom: none; }
   .bz-date { color: var(--muted); font-size: 10.5px; }
@@ -73,7 +78,6 @@
   .bz-import-bottom { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .bz-import-bottom input[type="number"] { width: 100px; }
   .bz-import-bottom select { flex: 1; min-width: 100px; }
-  .bz-desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bz-chip { font-size: 10.5px; padding: 3px 8px; border-radius: 20px; cursor: pointer; width: fit-content; border: none; font-family: inherit; }
   .bz-amount { font-family: Georgia, serif; text-align: right; font-size: 12.5px; }
   .bz-amount.pos { color: var(--sage); }
@@ -861,15 +865,22 @@
         }
         var receiptBtn = '<button class="bz-receipt-btn' + (t.receipt ? ' has' : '') + '" data-receipt="' + t.id + '" title="' + (t.receipt ? "Pogledaj račun" : "Dodaj fiskalni račun") + '">' + (t.receipt ? "🧾" : "＋") + '</button>';
         return '<div class="bz-row">' +
-          dateHtml +
-          '<span class="bz-desc">' + escapeHtml(t.description) + '</span>' +
-          chipHtml +
+          '<div class="bz-row-top">' +
+          '<span class="bz-desc" data-toggledesc="' + t.id + '">' + escapeHtml(t.description) + '</span>' +
           '<span class="bz-amount ' + (t.amount >= 0 ? "pos" : "neg") + '">' + (t.amount >= 0 ? "+" : "-") + fmt(t.amount) + '</span>' +
+          '</div>' +
+          '<div class="bz-row-bottom">' +
+          dateHtml +
+          chipHtml +
+          '<span class="bz-row-bottom-spacer"></span>' +
           receiptBtn +
           '<button class="bz-del" data-del="' + t.id + '">×</button>' +
-          '</div>';
+          '</div></div>';
       }).join("");
     }
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-toggledesc]"), function (el) {
+      el.addEventListener("click", function () { el.classList.toggle("expanded"); });
+    });
     Array.prototype.forEach.call(txContainer.querySelectorAll("[data-editdate]"), function (btn) {
       btn.addEventListener("click", function () {
         state.editingDateId = btn.getAttribute("data-editdate");
