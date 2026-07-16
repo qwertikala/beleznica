@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Beležnica</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Beležnica" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#0F1410" />
+<link rel="apple-touch-icon" href="data:image/png;base64,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" />
+<link rel="icon" href="data:image/png;base64,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" />
+
+<style>
+  :root {
+    --bg: #0F1410; --surface: #182019; --surface2: #1F2921; --border: #2A362D;
+    --text: #ECE8DD; --muted: #8FA08F; --gold: #C9A227; --sage: #7FA88A; --rust: #BC6A4A;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+  .bz-root { min-height: 100vh; padding: 24px 16px 60px; }
+  .bz-wrap { max-width: 720px; margin: 0 auto; }
+  .bz-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px; }
+  .bz-title { font-family: Georgia, serif; font-size: 28px; margin: 0; }
+  .bz-title span { color: var(--gold); }
+  .bz-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .bz-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
+  .bz-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; position: relative; overflow: hidden; }
+  .bz-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .bz-card.balance::before { background: var(--gold); }
+  .bz-card.income::before { background: var(--sage); }
+  .bz-card.expense::before { background: var(--rust); }
+  .bz-card-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .bz-card-value { font-family: Georgia, serif; font-size: 17px; margin-top: 6px; }
+  .bz-tabs { display: flex; gap: 4px; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .bz-tab { background: none; border: none; color: var(--muted); font-size: 13px; padding: 8px 12px; cursor: pointer; border-bottom: 2px solid transparent; font-family: inherit; }
+  .bz-tab.active { color: var(--text); border-bottom-color: var(--gold); }
+  .bz-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 16px; margin-bottom: 20px; }
+  .bz-tabpage { display: none; }
+  .bz-tabpage.active { display: block; }
+  .bz-textarea { width: 100%; min-height: 90px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 10px 12px; font-size: 13px; font-family: inherit; resize: vertical; }
+  .bz-hint { color: var(--muted); font-size: 11.5px; margin-top: 8px; line-height: 1.5; }
+  .bz-btn { background: var(--gold); color: #14170F; border: none; border-radius: 4px; padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 12px; font-family: inherit; }
+  .bz-btn:disabled { opacity: 0.6; }
+  .bz-form-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .bz-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 9px 12px; font-size: 13px; font-family: inherit; }
+  .bz-input.desc { flex: 1; min-width: 150px; }
+  .bz-input.amount { width: 110px; }
+  .bz-sign { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .bz-sign button { background: var(--surface2); border: none; color: var(--muted); padding: 9px 10px; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .bz-sign button.active.expense { background: var(--rust); color: #14170F; }
+  .bz-sign button.active.income { background: var(--sage); color: #14170F; }
+  .bz-error { color: var(--rust); font-size: 12px; margin-top: 10px; }
+  .bz-section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 12px; }
+  .bz-catrow { display: grid; grid-template-columns: 90px 1fr 80px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12px; }
+  .bz-catbar-track { background: var(--surface2); border-radius: 3px; height: 8px; overflow: hidden; }
+  .bz-catbar-fill { height: 100%; border-radius: 3px; }
+  .bz-row { display: grid; grid-template-columns: 58px 1fr 100px 90px 26px 24px; gap: 6px; align-items: center; padding: 9px 2px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .bz-receipt-btn { background: none; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); cursor: pointer; font-size: 13px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .bz-receipt-btn.has { color: var(--gold); border-color: var(--gold); }
+  .bz-row:last-child { border-bottom: none; }
+  .bz-date { color: var(--muted); font-size: 10.5px; }
+  .bz-desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bz-chip { font-size: 10.5px; padding: 3px 8px; border-radius: 20px; cursor: pointer; width: fit-content; border: none; font-family: inherit; }
+  .bz-amount { font-family: Georgia, serif; text-align: right; font-size: 12.5px; }
+  .bz-amount.pos { color: var(--sage); }
+  .bz-amount.neg { color: var(--rust); }
+  .bz-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; }
+  .bz-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 10.5px; padding: 3px; border-radius: 4px; }
+  .bz-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 26px 0; }
+  .bz-loading { color: var(--gold); font-size: 12px; margin-top: 10px; }
+  .bz-keybox { display: flex; gap: 8px; align-items: center; }
+  .bz-keybox input { flex: 1; }
+  .bz-keynote { color: var(--muted); font-size: 11px; margin-top: 8px; line-height: 1.5; }
+  .bz-catchip { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; padding: 4px 8px 4px 10px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .bz-catchip button { background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; font-size: 13px; line-height: 1; padding: 0; }
+  .bz-catchip button:hover { opacity: 1; }
+  select.bz-input { -webkit-appearance: none; appearance: none; }
+  a { color: var(--gold); }
+
+  .bz-hamburger { background: none; border: 1px solid var(--border); border-radius: 4px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .bz-hamburger span { display: block; width: 18px; height: 2px; background: var(--text); position: relative; }
+  .bz-hamburger span::before, .bz-hamburger span::after { content: ""; position: absolute; left: 0; width: 18px; height: 2px; background: var(--text); }
+  .bz-hamburger span::before { top: -6px; }
+  .bz-hamburger span::after { top: 6px; }
+
+  .bz-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 90; display: none; }
+  .bz-overlay.open { display: block; }
+  .bz-drawer { position: fixed; top: 0; left: 0; bottom: 0; width: 260px; background: var(--surface); border-right: 1px solid var(--border); z-index: 95; transform: translateX(-100%); transition: transform 0.2s ease; padding: 18px 14px; overflow-y: auto; }
+  .bz-drawer.open { transform: translateX(0); }
+  .bz-drawer-title { font-family: Georgia, serif; font-size: 18px; margin: 0 0 16px; color: var(--gold); }
+  .bz-drawer-tab { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 4px; font-size: 13.5px; }
+  .bz-drawer-tab:hover { background: var(--surface2); }
+  .bz-drawer-tab.active { background: var(--surface2); color: var(--gold); font-weight: 600; }
+  .bz-drawer-tab button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; opacity: 0; padding: 0 4px; }
+  .bz-drawer-tab:hover button { opacity: 0.7; }
+  .bz-drawer-tab button:hover { opacity: 1 !important; color: var(--rust); }
+  .bz-drawer-addrow { display: flex; gap: 6px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .bz-drawer-addrow input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 8px 10px; font-size: 12.5px; font-family: inherit; }
+  .bz-drawer-addrow button { background: var(--gold); color: #14170F; border: none; border-radius: 4px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+
+  .bz-loan-row { padding: 12px 4px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .bz-loan-row:last-child { border-bottom: none; }
+  .bz-loan-row.paid { opacity: 0.5; }
+  .bz-loan-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .bz-loan-name { font-weight: 600; font-size: 13.5px; }
+  .bz-loan-due { color: var(--muted); font-size: 11px; }
+  .bz-loan-meta { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 11.5px; margin-bottom: 8px; }
+  .bz-loan-meta b { color: var(--text); font-family: Georgia, serif; }
+  .bz-loan-actions { display: flex; gap: 8px; }
+  .bz-loan-actions button { font-size: 11.5px; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-family: inherit; }
+  .bz-pay-btn { background: var(--gold); color: #14170F; border: none; font-weight: 600; }
+  .bz-loan-del { background: none; border: 1px solid var(--border); color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="bz-overlay" id="drawerOverlay"></div>
+<div class="bz-drawer" id="drawer">
+  <div class="bz-drawer-title">Tabovi</div>
+  <div id="drawerTabs"></div>
+  <div class="bz-drawer-addrow">
+    <input type="text" id="newTabInput" placeholder="Novi tab (npr. Binance)" />
+    <button id="addTabBtn">+</button>
+  </div>
+</div>
+
+<div class="bz-root"><div class="bz-wrap">
+
+  <div class="bz-header">
+    <button class="bz-hamburger" id="hamburgerBtn"><span></span></button>
+    <div style="flex:1; margin-left:12px;">
+      <h1 class="bz-title" id="appTitle">Bel<span>e</span>žnica</h1>
+      <div class="bz-sub" id="appSub">lični dnevnik prihoda i troškova · automatska kategorizacija</div>
+    </div>
+  </div>
+
+  <div id="ledgerView">
+  <div class="bz-summary">
+    <div class="bz-card balance"><div class="bz-card-label">Stanje</div><div class="bz-card-value" id="valBalance">0 RSD</div></div>
+    <div class="bz-card income"><div class="bz-card-label">Prihodi</div><div class="bz-card-value" id="valIncome">0 RSD</div></div>
+    <div class="bz-card expense"><div class="bz-card-label">Rashodi</div><div class="bz-card-value" id="valExpense">0 RSD</div></div>
+  </div>
+
+  <div class="bz-panel">
+    <div class="bz-section-title">Kategorije</div>
+    <div id="categoryChips"></div>
+    <div class="bz-form-row" style="margin-top:6px;">
+      <input class="bz-input desc" id="newCategoryInput" placeholder="Nova kategorija (npr. Radna prodavnica)" />
+      <button class="bz-btn" style="margin-top:0" id="addCategoryBtn">Dodaj</button>
+    </div>
+  </div>
+
+  <div class="bz-tabs">
+    <button class="bz-tab active" id="tabPasteBtn">Nalepi transakcije</button>
+    <button class="bz-tab" id="tabManualBtn">Dodaj ručno</button>
+  </div>
+
+  <div class="bz-panel">
+    <div class="bz-tabpage active" id="pastePage">
+      <textarea class="bz-textarea" id="pasteText" placeholder="Maxi -2500&#10;Struja -4200&#10;Plata +85000"></textarea>
+      <div class="bz-hint">Jedna transakcija po redu: opis pa iznos. „-“ = trošak, „+“ = prihod. Kategorija se pogađa automatski, promeniš je klikom na nju u listi ispod.</div>
+      <button class="bz-btn" id="pasteSubmit">Dodaj i kategoriši</button>
+    </div>
+    <div class="bz-tabpage" id="manualPage">
+      <form id="manualForm">
+        <div class="bz-form-row">
+          <input class="bz-input desc" id="manualDesc" placeholder="Opis" />
+          <input class="bz-input amount" id="manualAmount" placeholder="Iznos" inputmode="decimal" />
+          <div class="bz-sign">
+            <button type="button" class="expense active" id="signExpense">Trošak</button>
+            <button type="button" class="income" id="signIncome">Prihod</button>
+          </div>
+        </div>
+        <div class="bz-form-row" style="margin-top:8px;">
+          <select class="bz-input" id="manualCategory" style="flex:1;"></select>
+        </div>
+        <button class="bz-btn" type="submit">Dodaj</button>
+      </form>
+    </div>
+    <div class="bz-error" id="errorMsg" style="display:none;"></div>
+  </div>
+
+  <div class="bz-panel" id="catPanel" style="display:none;">
+    <div class="bz-section-title">Rashodi po kategoriji</div>
+    <div id="catRows"></div>
+  </div>
+
+  <div class="bz-panel">
+    <div class="bz-section-title" id="txSectionTitle">Sve transakcije</div>
+    <div class="bz-form-row" style="margin-bottom:12px;">
+      <input class="bz-input desc" id="searchInput" placeholder="Pretraži po opisu..." />
+      <select class="bz-input" id="filterCategorySelect" style="width:140px;"><option value="">Sve kategorije</option></select>
+      <button class="bz-btn ghost" style="margin-top:0" id="clearFiltersBtn">Očisti</button>
+    </div>
+    <div id="txRows"><div class="bz-empty">Još nema unetih transakcija.</div></div>
+  </div>
+  </div>
+
+  <div id="loansView" style="display:none;">
+    <div class="bz-summary" style="grid-template-columns: 1fr 1fr;">
+      <div class="bz-card expense"><div class="bz-card-label">Mesečna obaveza</div><div class="bz-card-value" id="loansMonthly">0 RSD</div></div>
+      <div class="bz-card balance"><div class="bz-card-label">Ukupno preostalo</div><div class="bz-card-value" id="loansRemaining">0 RSD</div></div>
+    </div>
+
+    <div class="bz-panel">
+      <div class="bz-section-title">Dodaj kredit / rate na kupovinu</div>
+      <form id="loanForm">
+        <div class="bz-form-row">
+          <input class="bz-input desc" id="loanName" placeholder="Naziv (npr. Patike, Studentski kredit)" />
+        </div>
+        <div class="bz-form-row" style="margin-top:8px;">
+          <input class="bz-input amount" id="loanInstallmentAmount" placeholder="Iznos rate" inputmode="decimal" style="width:120px;" />
+          <input class="bz-input amount" id="loanRemainingCount" placeholder="Preostalo rata" inputmode="numeric" style="width:120px;" />
+          <input class="bz-input amount" id="loanTotalCount" placeholder="Ukupno rata (opciono)" inputmode="numeric" style="width:140px;" />
+        </div>
+        <div class="bz-form-row" style="margin-top:8px;">
+          <input class="bz-input" id="loanDueDate" type="date" style="width:160px;" />
+        </div>
+        <button class="bz-btn" type="submit">Dodaj</button>
+      </form>
+    </div>
+
+    <div class="bz-panel">
+      <div class="bz-section-title">Aktivne obaveze</div>
+      <div id="loanRows"><div class="bz-empty">Još nema unetih kredita/rata.</div></div>
+    </div>
+  </div>
+
+</div></div>
+
+<div id="lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:100; align-items:center; justify-content:center; padding:20px;">
+  <img id="lightboxImg" style="max-width:100%; max-height:90%; border-radius:4px;" />
+  <button id="lightboxClose" style="position:absolute; top:16px; right:16px; background:var(--gold); color:#14170F; border:none; border-radius:50%; width:36px; height:36px; font-size:18px; cursor:pointer;">×</button>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var DEFAULT_CATEGORIES = {
+    "Hrana": "#BC6A4A", "Prodavnica": "#8C6E4F", "Mesara": "#94443A", "Pekara": "#C98A4B",
+    "Računi": "#4A7A9B", "Transport": "#C9A227", "Kladionica": "#5B4B8A",
+    "Zabava": "#9B6FA0", "Zdravlje": "#6B9E78", "Kupovina": "#B08968",
+    "Prihod": "#7FA88A", "Ostalo": "#6E7A72"
+  };
+  var INVEST_CATEGORIES = {
+    "Depozit": "#7FA88A", "Povlačenje": "#BC6A4A", "Dobit": "#6B9E78", "Gubitak": "#94443A",
+    "Provizija": "#8C6E4F", "Dividenda": "#C9A227", "Ostalo": "#6E7A72"
+  };
+  var INVEST_CATEGORIES = {
+    "Depozit": "#7FA88A", "Povlačenje": "#BC6A4A", "Dobit": "#6B9E78", "Gubitak": "#94443A",
+    "Provizija": "#8C6E4F", "Dividenda": "#C9A227", "Ostalo": "#6E7A72"
+  };
+  var STAN_CATEGORIES = {
+    "Kirija/Rata stana": "#4A7A9B", "Struja": "#C9A227", "Infostan": "#8C6E4F",
+    "Internet": "#5B7DA6", "Održavanje": "#B08968", "Ostalo": "#6E7A72"
+  };
+  var EXTRA_PALETTE = ["#5B7DA6", "#8A5B7D", "#6B8A5B", "#A6835B", "#5BA695", "#A65B5B", "#7D5BA6", "#A6A65B"];
+  var PROTECTED_CATEGORIES = ["Prihod", "Ostalo", "Depozit", "Povlačenje"];
+
+  var DEFAULT_WORKSPACES = [
+    { id: "general", name: "Beležnica", type: "general", preset: "general" },
+    { id: "trading212", name: "Trading212", type: "general", preset: "invest" },
+    { id: "ibkr", name: "IBKR", type: "general", preset: "invest" },
+    { id: "kraken", name: "Kraken", type: "general", preset: "invest" },
+    { id: "raiffeisen", name: "Raiffeisen", type: "general", preset: "invest" },
+    { id: "futura", name: "Futura", type: "general", preset: "invest" },
+    { id: "stan", name: "Stan", type: "general", preset: "stan" },
+    { id: "krediti", name: "Krediti i rate", type: "loans", preset: null }
+  ];
+
+  function loadWorkspaces() {
+    try {
+      var saved = JSON.parse(localStorage.getItem("bz_workspaces") || "null");
+      if (saved && saved.length) return saved;
+    } catch (e) {}
+    // Migracija: ako postoje stari podaci bez tabova, prebaci ih u "general"
+    var legacyTx = localStorage.getItem("bz_transactions");
+    var legacyCat = localStorage.getItem("bz_categories");
+    if (legacyTx) localStorage.setItem("bz_tx_general", legacyTx);
+    if (legacyCat) localStorage.setItem("bz_cat_general", legacyCat);
+    localStorage.setItem("bz_workspaces", JSON.stringify(DEFAULT_WORKSPACES));
+    return DEFAULT_WORKSPACES.slice();
+  }
+  function saveWorkspaces() {
+    localStorage.setItem("bz_workspaces", JSON.stringify(state.workspaces));
+  }
+  function wsId(name) {
+    return name.toLowerCase().replace(/[^a-z0-9čćžšđ]+/gi, "").slice(0, 24) + "_" + Date.now().toString(36).slice(-4);
+  }
+  function loadTransactionsFor(id) {
+    try { return JSON.parse(localStorage.getItem("bz_tx_" + id) || "[]"); } catch (e) { return []; }
+  }
+  function loadCategoriesFor(id, preset) {
+    try {
+      var saved = JSON.parse(localStorage.getItem("bz_cat_" + id) || "null");
+      if (saved && Object.keys(saved).length) return saved;
+    } catch (e) {}
+    if (preset === "invest") return Object.assign({}, INVEST_CATEGORIES);
+    if (preset === "stan") return Object.assign({}, STAN_CATEGORIES);
+    return Object.assign({}, DEFAULT_CATEGORIES);
+  }
+  function saveTransactions() {
+    localStorage.setItem("bz_tx_" + state.activeWorkspace, JSON.stringify(state.transactions));
+  }
+  function saveCategories() {
+    localStorage.setItem("bz_cat_" + state.activeWorkspace, JSON.stringify(state.categories));
+  }
+  function loadLoansFor(id) {
+    try { return JSON.parse(localStorage.getItem("bz_loans_" + id) || "[]"); } catch (e) { return []; }
+  }
+  function saveLoans() {
+    localStorage.setItem("bz_loans_" + state.activeWorkspace, JSON.stringify(state.loans));
+  }
+  function currentWorkspaceObj() {
+    return state.workspaces.filter(function (w) { return w.id === state.activeWorkspace; })[0] || { type: "general", preset: "general" };
+  }
+  function switchWorkspace(id) {
+    state.activeWorkspace = id;
+    localStorage.setItem("bz_active_workspace", id);
+    var ws = state.workspaces.filter(function (w) { return w.id === id; })[0] || { type: "general", preset: "general" };
+    if (ws.type === "loans") {
+      state.loans = loadLoansFor(id);
+    } else {
+      state.transactions = loadTransactionsFor(id);
+      state.categories = loadCategoriesFor(id, ws.preset);
+    }
+    state.categoryFilter = null;
+    state.searchQuery = "";
+    state.editingId = null;
+    var s = document.getElementById("searchInput"); if (s) s.value = "";
+    render();
+  }
+  function addWorkspace(name) {
+    name = (name || "").trim();
+    if (!name) return null;
+    var id = wsId(name);
+    state.workspaces.push({ id: id, name: name, type: "general", preset: "general" });
+    saveWorkspaces();
+    return id;
+  }
+  function deleteWorkspace(id) {
+    if (state.workspaces.length <= 1) { alert("Mora postojati bar jedan tab."); return; }
+    if (!confirm("Obrisati tab i sve njegove transakcije? Ovo se ne može poništiti.")) return;
+    state.workspaces = state.workspaces.filter(function (w) { return w.id !== id; });
+    saveWorkspaces();
+    localStorage.removeItem("bz_tx_" + id);
+    localStorage.removeItem("bz_cat_" + id);
+    localStorage.removeItem("bz_loans_" + id);
+    if (state.activeWorkspace === id) switchWorkspace(state.workspaces[0].id);
+    else renderDrawer();
+  }
+
+  function categoryNames() { return Object.keys(state.categories); }
+  function nextColor() {
+    var idx = categoryNames().length % EXTRA_PALETTE.length;
+    return EXTRA_PALETTE[idx];
+  }
+  function addCategory(name) {
+    name = (name || "").trim();
+    if (!name) return null;
+    if (state.categories[name]) return name;
+    state.categories[name] = nextColor();
+    saveCategories();
+    return name;
+  }
+  function deleteCategory(name) {
+    if (PROTECTED_CATEGORIES.indexOf(name) !== -1) { alert("Ova kategorija je zaštićena i ne može se obrisati."); return; }
+    delete state.categories[name];
+    state.transactions.forEach(function (t) { if (t.category === name) t.category = "Ostalo"; });
+    saveCategories();
+    saveTransactions();
+    render();
+  }
+
+  var state = {
+    workspaces: [],
+    activeWorkspace: "general",
+    transactions: [],
+    categories: {},
+    loans: [],
+    tab: "paste",
+    busy: false,
+    editingId: null,
+    manualCategoryTouched: false,
+    categoryFilter: null,
+    searchQuery: ""
+  };
+
+  state.workspaces = loadWorkspaces();
+  state.activeWorkspace = localStorage.getItem("bz_active_workspace") || state.workspaces[0].id;
+  if (!state.workspaces.some(function (w) { return w.id === state.activeWorkspace; })) state.activeWorkspace = state.workspaces[0].id;
+  (function initialLoad() {
+    var ws = state.workspaces.filter(function (w) { return w.id === state.activeWorkspace; })[0] || { type: "general", preset: "general" };
+    if (ws.type === "loans") {
+      state.loans = loadLoansFor(state.activeWorkspace);
+    } else {
+      state.transactions = loadTransactionsFor(state.activeWorkspace);
+      state.categories = loadCategoriesFor(state.activeWorkspace, ws.preset);
+    }
+  })();
+
+  function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+  function todayISO() { return new Date().toISOString().slice(0, 10); }
+  function fmt(n) { return Math.abs(n).toLocaleString("sr-RS", { maximumFractionDigits: 0 }) + " RSD"; }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function parsePastedLines(text) {
+    var lines = text.split("\n").map(function (l) { return l.trim(); }).filter(Boolean);
+    var out = [];
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var m = line.match(/([+-]?\d[\d.,\s]*)\s*(rsd|din\.?)?\s*$/i);
+      if (!m) continue;
+      var raw = m[1].replace(/\s/g, "");
+      var sign = 1;
+      if (raw.indexOf("-") === 0) { sign = -1; raw = raw.slice(1); }
+      else if (raw.indexOf("+") === 0) { raw = raw.slice(1); }
+      else { sign = -1; }
+      if (raw.indexOf(",") !== -1) raw = raw.replace(/\./g, "").replace(",", ".");
+      else raw = raw.replace(/\./g, "");
+      var amount = parseFloat(raw);
+      if (isNaN(amount)) continue;
+      var description = line.slice(0, m.index).trim().replace(/[:\-–]+$/, "").trim();
+      if (!description) description = "Nepoznata stavka";
+      out.push({ id: uid(), description: description, amount: sign * Math.abs(amount), date: todayISO(), category: null });
+    }
+    return out;
+  }
+
+  function showError(msg) {
+    var el = document.getElementById("errorMsg");
+    el.textContent = msg;
+    el.style.display = msg ? "block" : "none";
+  }
+
+  var KEYWORD_RULES = [
+    ["Mesara", ["mesara", "mesnica"]],
+    ["Pekara", ["pekara", "pekarica"]],
+    ["Kladionica", ["kladionica", "mozzart", "meridian", "soccerbet", "admiralbet", "balkanbet", "maxbet"]],
+    ["Hrana", ["maxi", "lidl", "idea", "roda", "aroma", "dis market", "univerexport", "restoran", "kafic", "kafana", "mcdonald", "kfc", "wolt", "glovo", "supermarket", "pijaca"]],
+    ["Prodavnica", ["prodavnica", "market", "trafika", "kiosk", "dućan", "ducan"]],
+    ["Računi", ["struja", "edb", "elektrodistribucija", "telekom", "telefon", "internet", "kablovska", "sbb", "mts", "a1 srbija", "komunalije", "kirija", "infostan", "grejanje", "toplana", "vodovod"]],
+    ["Transport", ["gorivo", "benzin", "nis petrol", "eko", "taxi", "taksi", "prevoz", "gsp", "uber", "cargo", "car:go", "parking", "registracija vozila", "autobus", "voz"]],
+    ["Zabava", ["bioskop", "kino", "netflix", "spotify", "izlazak", "koncert", "pab", "bar ", " klub", "gejming", "steam", "hbo"]],
+    ["Zdravlje", ["apoteka", "lekar", "doktor", "bolnica", "stomatolog", " lek ", "vitamini", "dm ", "lilly", "ordinacija", "klinika"]],
+    ["Kupovina", ["zara", "h&m", "tehnomanija", "gigatron", "emag", "shopping", "odeca", "obuca", "prodavnica odece"]],
+    ["Prihod", ["plata", "honorar", "uplata", "poklon", "povracaj", "prihod", "refundacija", "zarada"]]
+  ];
+
+  function normalizeText(s) {
+    return s.toLowerCase()
+      .replace(/š/g, "s").replace(/đ/g, "dj").replace(/č/g, "c").replace(/ć/g, "c").replace(/ž/g, "z");
+  }
+
+  function categorizeByKeywords(t) {
+    if (t.amount > 0) return "Prihod";
+    var norm = " " + normalizeText(t.description) + " ";
+    for (var i = 0; i < KEYWORD_RULES.length; i++) {
+      var cat = KEYWORD_RULES[i][0];
+      var words = KEYWORD_RULES[i][1];
+      for (var j = 0; j < words.length; j++) {
+        if (norm.indexOf(words[j]) !== -1) return cat;
+      }
+    }
+    return "Ostalo";
+  }
+
+  function runCategorization(items) {
+    if (items.length === 0) return;
+    items.forEach(function (t) { if (t.category === null) t.category = categorizeByKeywords(t); });
+    saveTransactions();
+    render();
+  }
+
+  function compressImageFile(file, maxDim, quality) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = function () {
+        var img = new Image();
+        img.onerror = reject;
+        img.onload = function () {
+          var w = img.width, h = img.height;
+          if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+          var canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function addLoan(data) {
+    var item = {
+      id: uid(),
+      name: data.name,
+      installmentAmount: data.installmentAmount,
+      remainingCount: data.remainingCount,
+      totalCount: data.totalCount || null,
+      dueDate: data.dueDate || null
+    };
+    state.loans = [item].concat(state.loans);
+    saveLoans();
+    render();
+  }
+  function payInstallment(id) {
+    var item = state.loans.filter(function (l) { return l.id === id; })[0];
+    if (!item) return;
+    if (item.remainingCount > 0) item.remainingCount -= 1;
+    if (item.dueDate) {
+      var d = new Date(item.dueDate);
+      d.setMonth(d.getMonth() + 1);
+      item.dueDate = d.toISOString().slice(0, 10);
+    }
+    saveLoans();
+    render();
+  }
+  function deleteLoan(id) {
+    state.loans = state.loans.filter(function (l) { return l.id !== id; });
+    saveLoans();
+    render();
+  }
+  function renderLoansView() {
+    var monthly = 0, remainingTotal = 0;
+    state.loans.forEach(function (l) {
+      if (l.remainingCount > 0) monthly += l.installmentAmount;
+      remainingTotal += l.installmentAmount * l.remainingCount;
+    });
+    document.getElementById("loansMonthly").textContent = fmt(monthly);
+    document.getElementById("loansRemaining").textContent = fmt(remainingTotal);
+
+    var container = document.getElementById("loanRows");
+    if (state.loans.length === 0) {
+      container.innerHTML = '<div class="bz-empty">Još nema unetih kredita/rata.</div>';
+      return;
+    }
+    var sorted = state.loans.slice().sort(function (a, b) {
+      if (a.remainingCount === 0 && b.remainingCount !== 0) return 1;
+      if (b.remainingCount === 0 && a.remainingCount !== 0) return -1;
+      return (a.dueDate || "9999") < (b.dueDate || "9999") ? -1 : 1;
+    });
+    container.innerHTML = sorted.map(function (l) {
+      var paidOff = l.remainingCount <= 0;
+      var percent = l.totalCount ? Math.round(((l.totalCount - l.remainingCount) / l.totalCount) * 100) + "%" : "—";
+      var countLabel = l.totalCount ? l.remainingCount + " / " + l.totalCount : String(l.remainingCount);
+      var remainingAmt = l.installmentAmount * l.remainingCount;
+      return '<div class="bz-loan-row' + (paidOff ? ' paid' : '') + '">' +
+        '<div class="bz-loan-top"><span class="bz-loan-name">' + escapeHtml(l.name) + (paidOff ? ' ✓ otplaćeno' : '') + '</span>' +
+        '<span class="bz-loan-due">' + (l.dueDate ? "sledeća: " + l.dueDate : "") + '</span></div>' +
+        '<div class="bz-loan-meta">' +
+        '<span>Rata: <b>' + fmt(l.installmentAmount) + '</b></span>' +
+        '<span>Preostalo rata: <b>' + countLabel + '</b></span>' +
+        '<span>% otplaćeno: <b>' + percent + '</b></span>' +
+        '<span>Preostalo za otplatu: <b>' + fmt(remainingAmt) + '</b></span>' +
+        '</div>' +
+        '<div class="bz-loan-actions">' +
+        (paidOff ? '' : '<button class="bz-pay-btn" data-pay="' + l.id + '">Plati ratu</button>') +
+        '<button class="bz-loan-del" data-delloan="' + l.id + '">Obriši</button>' +
+        '</div></div>';
+    }).join("");
+    Array.prototype.forEach.call(container.querySelectorAll("[data-pay]"), function (btn) {
+      btn.addEventListener("click", function () { payInstallment(btn.getAttribute("data-pay")); });
+    });
+    Array.prototype.forEach.call(container.querySelectorAll("[data-delloan]"), function (btn) {
+      btn.addEventListener("click", function () {
+        if (confirm("Obrisati ovu stavku?")) deleteLoan(btn.getAttribute("data-delloan"));
+      });
+    });
+  }
+
+  function renderDrawer() {
+    var container = document.getElementById("drawerTabs");
+    container.innerHTML = state.workspaces.map(function (w) {
+      var active = w.id === state.activeWorkspace;
+      return '<div class="bz-drawer-tab' + (active ? ' active' : '') + '" data-switchws="' + w.id + '">' +
+        '<span>' + escapeHtml(w.name) + '</span>' +
+        '<button data-delws="' + w.id + '" title="Obriši tab">×</button>' +
+        '</div>';
+    }).join("");
+    Array.prototype.forEach.call(container.querySelectorAll("[data-switchws]"), function (row) {
+      row.addEventListener("click", function (e) {
+        if (e.target.hasAttribute("data-delws")) return;
+        switchWorkspace(row.getAttribute("data-switchws"));
+        closeDrawer();
+      });
+    });
+    Array.prototype.forEach.call(container.querySelectorAll("[data-delws]"), function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        deleteWorkspace(btn.getAttribute("data-delws"));
+      });
+    });
+    var wsObj = state.workspaces.filter(function (w) { return w.id === state.activeWorkspace; })[0];
+    document.getElementById("appTitle").innerHTML = wsObj ? escapeHtml(wsObj.name) : "Beležnica";
+  }
+
+  function openDrawer() {
+    document.getElementById("drawer").classList.add("open");
+    document.getElementById("drawerOverlay").classList.add("open");
+  }
+  function closeDrawer() {
+    document.getElementById("drawer").classList.remove("open");
+    document.getElementById("drawerOverlay").classList.remove("open");
+  }
+
+  function renderCategoryChips() {
+    var container = document.getElementById("categoryChips");
+    container.innerHTML = categoryNames().map(function (cat) {
+      var color = state.categories[cat];
+      var protectedCat = PROTECTED_CATEGORIES.indexOf(cat) !== -1;
+      return '<span class="bz-catchip" style="background:' + color + '26;color:' + color + '">' +
+        escapeHtml(cat) +
+        (protectedCat ? '' : ' <button data-delcat="' + cat + '" title="Obriši kategoriju">×</button>') +
+        '</span>';
+    }).join("");
+    Array.prototype.forEach.call(container.querySelectorAll("[data-delcat]"), function (btn) {
+      btn.addEventListener("click", function () { deleteCategory(btn.getAttribute("data-delcat")); });
+    });
+  }
+
+  function renderManualCategorySelect() {
+    var sel = document.getElementById("manualCategory");
+    var prevVal = sel.value;
+    sel.innerHTML = categoryNames().map(function (c) {
+      return '<option value="' + c + '">' + escapeHtml(c) + '</option>';
+    }).join("");
+    if (categoryNames().indexOf(prevVal) !== -1) sel.value = prevVal;
+  }
+
+  function renderFilterCategorySelect() {
+    var sel = document.getElementById("filterCategorySelect");
+    sel.innerHTML = '<option value="">Sve kategorije</option>' + categoryNames().map(function (c) {
+      return '<option value="' + c + '">' + escapeHtml(c) + '</option>';
+    }).join("");
+    sel.value = state.categoryFilter || "";
+  }
+
+  function render() {
+    renderDrawer();
+
+    var ws = currentWorkspaceObj();
+    if (ws.type === "loans") {
+      document.getElementById("ledgerView").style.display = "none";
+      document.getElementById("loansView").style.display = "block";
+      renderLoansView();
+      return;
+    }
+    document.getElementById("ledgerView").style.display = "block";
+    document.getElementById("loansView").style.display = "none";
+
+    renderCategoryChips();
+    renderManualCategorySelect();
+    renderFilterCategorySelect();
+
+    var balance = 0, income = 0, expense = 0;
+    var byCategory = {};
+    state.transactions.forEach(function (t) {
+      balance += t.amount;
+      if (t.amount > 0) income += t.amount;
+      else {
+        expense += t.amount;
+        var c = t.category || "Ostalo";
+        byCategory[c] = (byCategory[c] || 0) + Math.abs(t.amount);
+      }
+    });
+    document.getElementById("valBalance").textContent = (balance >= 0 ? "" : "-") + fmt(balance);
+    document.getElementById("valIncome").textContent = fmt(income);
+    document.getElementById("valExpense").textContent = fmt(expense);
+
+    var catEntries = Object.keys(byCategory).map(function (k) { return [k, byCategory[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+    var catPanel = document.getElementById("catPanel");
+    if (catEntries.length === 0) {
+      catPanel.style.display = "none";
+    } else {
+      catPanel.style.display = "block";
+      var maxCat = Math.max.apply(null, catEntries.map(function (e) { return e[1]; }).concat([1]));
+      var catHtml = catEntries.map(function (entry) {
+        var cat = entry[0], val = entry[1];
+        var color = state.categories[cat] || "#666";
+        var active = state.categoryFilter === cat;
+        return '<div class="bz-catrow" data-catfilter="' + escapeHtml(cat) + '" style="cursor:pointer;' + (active ? 'outline:1px solid ' + color + ';border-radius:4px;' : '') + '">' +
+          '<span style="' + (active ? 'font-weight:700;' : '') + '">' + escapeHtml(cat) + '</span>' +
+          '<div class="bz-catbar-track"><div class="bz-catbar-fill" style="width:' + (val / maxCat * 100) + '%;background:' + color + '"></div></div>' +
+          '<span style="text-align:right;color:var(--muted)">' + fmt(val) + '</span></div>';
+      }).join("");
+      document.getElementById("catRows").innerHTML = catHtml;
+      Array.prototype.forEach.call(document.getElementById("catRows").querySelectorAll("[data-catfilter]"), function (row) {
+        row.addEventListener("click", function () {
+          var cat = row.getAttribute("data-catfilter");
+          state.categoryFilter = state.categoryFilter === cat ? null : cat;
+          render();
+        });
+      });
+    }
+
+    var txTitle = document.getElementById("txSectionTitle");
+    if (txTitle) {
+      txTitle.innerHTML = state.categoryFilter
+        ? "Transakcije — " + escapeHtml(state.categoryFilter) + ' <a href="#" id="clearFilterLink" style="font-size:11px; font-weight:normal; text-transform:none;">(prikaži sve)</a>'
+        : "Sve transakcije";
+      var clearLink = document.getElementById("clearFilterLink");
+      if (clearLink) clearLink.addEventListener("click", function (e) { e.preventDefault(); state.categoryFilter = null; render(); });
+    }
+
+    var q = normalizeText(state.searchQuery || "");
+    var filtered = state.transactions.filter(function (t) {
+      if (state.categoryFilter && (t.category || "Ostalo") !== state.categoryFilter) return false;
+      if (q && normalizeText(t.description).indexOf(q) === -1) return false;
+      return true;
+    });
+    var sorted = filtered.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var txContainer = document.getElementById("txRows");
+    if (sorted.length === 0) {
+      txContainer.innerHTML = '<div class="bz-empty">' + (state.categoryFilter || q ? "Nema transakcija koje odgovaraju filteru." : "Još nema unetih transakcija.") + '</div>';
+    } else {
+      txContainer.innerHTML = sorted.map(function (t) {
+        var color = state.categories[t.category] || "#8FA08F";
+        var chipHtml;
+        if (state.editingId === t.id) {
+          var opts = categoryNames().map(function (c) {
+            return '<option value="' + c + '"' + (c === (t.category || "Ostalo") ? " selected" : "") + '>' + c + '</option>';
+          }).join("");
+          chipHtml = '<select class="bz-select" data-catselect="' + t.id + '">' + opts + '</select>';
+        } else {
+          chipHtml = '<button class="bz-chip" data-editcat="' + t.id + '" style="background:' + color + '26;color:' + color + '">' +
+            escapeHtml(t.category || (state.busy ? "..." : "?")) + '</button>';
+        }
+        var receiptBtn = '<button class="bz-receipt-btn' + (t.receipt ? ' has' : '') + '" data-receipt="' + t.id + '" title="' + (t.receipt ? "Pogledaj račun" : "Dodaj fiskalni račun") + '">' + (t.receipt ? "🧾" : "＋") + '</button>';
+        return '<div class="bz-row">' +
+          '<span class="bz-date">' + t.date.slice(5) + '</span>' +
+          '<span class="bz-desc">' + escapeHtml(t.description) + '</span>' +
+          chipHtml +
+          '<span class="bz-amount ' + (t.amount >= 0 ? "pos" : "neg") + '">' + (t.amount >= 0 ? "+" : "-") + fmt(t.amount) + '</span>' +
+          receiptBtn +
+          '<button class="bz-del" data-del="' + t.id + '">×</button>' +
+          '</div>';
+      }).join("");
+    }
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-receipt]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-receipt");
+        var t = state.transactions.filter(function (t) { return t.id === id; })[0];
+        if (t && t.receipt) {
+          document.getElementById("lightboxImg").src = t.receipt;
+          document.getElementById("lightbox").style.display = "flex";
+        } else {
+          var input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.capture = "environment";
+          input.addEventListener("change", function () {
+            if (!input.files || !input.files[0]) return;
+            compressImageFile(input.files[0], 1000, 0.7).then(function (dataUrl) {
+              t.receipt = dataUrl;
+              saveTransactions();
+              render();
+            }).catch(function () { showError("Nije uspelo učitavanje slike računa."); });
+          });
+          input.click();
+        }
+      });
+    });
+
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-del]"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.transactions = state.transactions.filter(function (t) { return t.id !== btn.getAttribute("data-del"); });
+        saveTransactions();
+        render();
+      });
+    });
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-editcat]"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.editingId = btn.getAttribute("data-editcat");
+        render();
+      });
+    });
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-catselect]"), function (sel) {
+      sel.addEventListener("change", function () {
+        var id = sel.getAttribute("data-catselect");
+        var t = state.transactions.filter(function (t) { return t.id === id; })[0];
+        if (t) t.category = sel.value;
+        state.editingId = null;
+        saveTransactions();
+        render();
+      });
+      sel.addEventListener("blur", function () {
+        state.editingId = null;
+        render();
+      });
+    });
+  }
+
+  document.getElementById("tabPasteBtn").addEventListener("click", function () {
+    state.tab = "paste";
+    document.getElementById("tabPasteBtn").classList.add("active");
+    document.getElementById("tabManualBtn").classList.remove("active");
+    document.getElementById("pastePage").classList.add("active");
+    document.getElementById("manualPage").classList.remove("active");
+  });
+  document.getElementById("tabManualBtn").addEventListener("click", function () {
+    state.tab = "manual";
+    document.getElementById("tabManualBtn").classList.add("active");
+    document.getElementById("tabPasteBtn").classList.remove("active");
+    document.getElementById("manualPage").classList.add("active");
+    document.getElementById("pastePage").classList.remove("active");
+  });
+
+  document.getElementById("pasteSubmit").addEventListener("click", function () {
+    var textEl = document.getElementById("pasteText");
+    var parsed = parsePastedLines(textEl.value);
+    if (parsed.length === 0) { showError("Nisam prepoznao nijednu transakciju. Format: opis pa iznos, npr. „Maxi -2500“."); return; }
+    state.transactions = parsed.concat(state.transactions);
+    saveTransactions();
+    textEl.value = "";
+    render();
+    runCategorization(parsed);
+  });
+
+  var signMode = "expense";
+  document.getElementById("signExpense").addEventListener("click", function () {
+    signMode = "expense";
+    document.getElementById("signExpense").classList.add("active");
+    document.getElementById("signIncome").classList.remove("active");
+  });
+  document.getElementById("signIncome").addEventListener("click", function () {
+    signMode = "income";
+    document.getElementById("signIncome").classList.add("active");
+    document.getElementById("signExpense").classList.remove("active");
+  });
+
+  document.getElementById("manualForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var descEl = document.getElementById("manualDesc");
+    var amountEl = document.getElementById("manualAmount");
+    var catEl = document.getElementById("manualCategory");
+    var val = parseFloat(String(amountEl.value).replace(",", "."));
+    if (!descEl.value.trim() || isNaN(val) || val === 0) { showError("Unesi opis i validan iznos."); return; }
+    var chosenCategory = catEl.value || null;
+    var t = { id: uid(), description: descEl.value.trim(), amount: signMode === "expense" ? -Math.abs(val) : Math.abs(val), date: todayISO(), category: chosenCategory };
+    state.transactions = [t].concat(state.transactions);
+    saveTransactions();
+    descEl.value = ""; amountEl.value = ""; state.manualCategoryTouched = false;
+    render();
+    if (!chosenCategory) runCategorization([t]);
+  });
+
+  document.getElementById("manualDesc").addEventListener("input", function () {
+    if (state.manualCategoryTouched) return;
+    var desc = this.value;
+    if (!desc.trim()) return;
+    var guess = categorizeByKeywords({ amount: signMode === "expense" ? -1 : 1, description: desc });
+    var sel = document.getElementById("manualCategory");
+    if (categoryNames().indexOf(guess) !== -1) sel.value = guess;
+  });
+  document.getElementById("manualCategory").addEventListener("change", function () {
+    state.manualCategoryTouched = true;
+  });
+
+  document.getElementById("addCategoryBtn").addEventListener("click", function () {
+    var input = document.getElementById("newCategoryInput");
+    var name = addCategory(input.value);
+    if (name) { input.value = ""; render(); document.getElementById("manualCategory").value = name; }
+  });
+  document.getElementById("newCategoryInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); document.getElementById("addCategoryBtn").click(); }
+  });
+
+  document.getElementById("searchInput").addEventListener("input", function () {
+    state.searchQuery = this.value;
+    render();
+  });
+  document.getElementById("filterCategorySelect").addEventListener("change", function () {
+    state.categoryFilter = this.value || null;
+    render();
+  });
+  document.getElementById("clearFiltersBtn").addEventListener("click", function () {
+    state.categoryFilter = null;
+    state.searchQuery = "";
+    document.getElementById("searchInput").value = "";
+    render();
+  });
+  document.getElementById("lightboxClose").addEventListener("click", function () {
+    document.getElementById("lightbox").style.display = "none";
+  });
+  document.getElementById("lightbox").addEventListener("click", function (e) {
+    if (e.target.id === "lightbox") document.getElementById("lightbox").style.display = "none";
+  });
+
+  document.getElementById("hamburgerBtn").addEventListener("click", openDrawer);
+  document.getElementById("drawerOverlay").addEventListener("click", closeDrawer);
+  document.getElementById("addTabBtn").addEventListener("click", function () {
+    var input = document.getElementById("newTabInput");
+    var id = addWorkspace(input.value);
+    if (id) { input.value = ""; switchWorkspace(id); }
+  });
+  document.getElementById("newTabInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); document.getElementById("addTabBtn").click(); }
+  });
+
+  document.getElementById("loanForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nameEl = document.getElementById("loanName");
+    var amountEl = document.getElementById("loanInstallmentAmount");
+    var remEl = document.getElementById("loanRemainingCount");
+    var totalEl = document.getElementById("loanTotalCount");
+    var dueEl = document.getElementById("loanDueDate");
+    var amount = parseFloat(String(amountEl.value).replace(",", "."));
+    var remaining = parseInt(remEl.value, 10);
+    var total = totalEl.value ? parseInt(totalEl.value, 10) : null;
+    if (!nameEl.value.trim() || isNaN(amount) || isNaN(remaining)) { alert("Unesi naziv, iznos rate i broj preostalih rata."); return; }
+    addLoan({ name: nameEl.value.trim(), installmentAmount: amount, remainingCount: remaining, totalCount: total, dueDate: dueEl.value || null });
+    nameEl.value = ""; amountEl.value = ""; remEl.value = ""; totalEl.value = ""; dueEl.value = "";
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
