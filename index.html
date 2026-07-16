@@ -27,6 +27,11 @@
   .bz-title span { color: var(--gold); }
   .bz-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
   .bz-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
+  .bz-month-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 14px; }
+  .bz-month-nav button { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 4px; cursor: pointer; font-family: inherit; }
+  .bz-month-nav #monthPrevBtn, .bz-month-nav #monthNextBtn { width: 32px; height: 32px; font-size: 16px; }
+  .bz-month-nav #monthLabel { font-family: Georgia, serif; font-size: 15px; min-width: 130px; text-align: center; }
+  .bz-month-nav #monthTodayBtn { font-size: 11px; padding: 5px 10px; color: var(--gold); border-color: var(--gold); }
   .bz-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; position: relative; overflow: hidden; }
   .bz-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
   .bz-card.balance::before { background: var(--gold); }
@@ -152,6 +157,12 @@
   </div>
 
   <div id="ledgerView">
+  <div class="bz-month-nav">
+    <button id="monthPrevBtn" title="Prethodni mesec">‹</button>
+    <span id="monthLabel">—</span>
+    <button id="monthNextBtn" title="Sledeći mesec">›</button>
+    <button id="monthTodayBtn" style="display:none;">Ovaj mesec</button>
+  </div>
   <div class="bz-summary">
     <div class="bz-card balance"><div class="bz-card-label">Stanje</div><div class="bz-card-value" id="valBalance">0 RSD</div></div>
     <div class="bz-card income"><div class="bz-card-label">Prihodi</div><div class="bz-card-value" id="valIncome">0 RSD</div></div>
@@ -349,6 +360,7 @@
     state.searchQuery = "";
     state.editingId = null;
     state.visibleCount = 15;
+    state.selectedMonth = todayISO().slice(0, 7);
     var s = document.getElementById("searchInput"); if (s) s.value = "";
     render();
   }
@@ -407,7 +419,8 @@
     manualCategoryTouched: false,
     categoryFilter: null,
     searchQuery: "",
-    visibleCount: 15
+    visibleCount: 15,
+    selectedMonth: todayISO().slice(0, 7)
   };
 
   state.workspaces = loadWorkspaces();
@@ -426,6 +439,18 @@
   function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
   function todayISO() { return new Date().toISOString().slice(0, 10); }
   function fmt(n) { return Math.abs(n).toLocaleString("sr-RS", { maximumFractionDigits: 0 }) + " RSD"; }
+  var MONTH_NAMES = ["Januar", "Februar", "Mart", "April", "Maj", "Jun", "Jul", "Avgust", "Septembar", "Oktobar", "Novembar", "Decembar"];
+  function monthLabel(m) {
+    var parts = m.split("-");
+    var idx = parseInt(parts[1], 10) - 1;
+    return MONTH_NAMES[idx] + " " + parts[0];
+  }
+  function shiftMonth(m, delta) {
+    var parts = m.split("-");
+    var y = parseInt(parts[0], 10), mo = parseInt(parts[1], 10) - 1;
+    var d = new Date(y, mo + delta, 1);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  }
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -787,9 +812,15 @@
     renderManualCategorySelect();
     renderFilterCategorySelect();
 
+    document.getElementById("monthLabel").textContent = monthLabel(state.selectedMonth);
+    var currentMonth = todayISO().slice(0, 7);
+    document.getElementById("monthTodayBtn").style.display = state.selectedMonth === currentMonth ? "none" : "inline-block";
+    document.getElementById("monthNextBtn").disabled = state.selectedMonth >= currentMonth;
+
     var balance = 0, income = 0, expense = 0;
     var byCategory = {};
-    state.transactions.forEach(function (t) {
+    var monthTx = state.transactions.filter(function (t) { return t.date.slice(0, 7) === state.selectedMonth; });
+    monthTx.forEach(function (t) {
       balance += t.amount;
       if (t.amount > 0) income += t.amount;
       else {
@@ -830,16 +861,21 @@
     }
 
     var txTitle = document.getElementById("txSectionTitle");
+    var q = normalizeText(state.searchQuery || "");
     if (txTitle) {
-      txTitle.innerHTML = state.categoryFilter
-        ? "Transakcije — " + escapeHtml(state.categoryFilter) + ' <a href="#" id="clearFilterLink" style="font-size:11px; font-weight:normal; text-transform:none;">(prikaži sve)</a>'
-        : "Sve transakcije";
+      if (q) {
+        txTitle.textContent = "Rezultati pretrage (svi meseci)";
+      } else if (state.categoryFilter) {
+        txTitle.innerHTML = "Transakcije — " + escapeHtml(state.categoryFilter) + ' <a href="#" id="clearFilterLink" style="font-size:11px; font-weight:normal; text-transform:none;">(prikaži sve)</a>';
+      } else {
+        txTitle.textContent = "Transakcije — " + monthLabel(state.selectedMonth);
+      }
       var clearLink = document.getElementById("clearFilterLink");
       if (clearLink) clearLink.addEventListener("click", function (e) { e.preventDefault(); state.categoryFilter = null; render(); });
     }
 
-    var q = normalizeText(state.searchQuery || "");
-    var filtered = state.transactions.filter(function (t) {
+    var baseList = q ? state.transactions : monthTx;
+    var filtered = baseList.filter(function (t) {
       if (state.categoryFilter && (t.category || "Ostalo") !== state.categoryFilter) return false;
       if (q && normalizeText(t.description).indexOf(q) === -1) return false;
       return true;
@@ -1039,6 +1075,23 @@
     state.searchQuery = "";
     state.visibleCount = 15;
     document.getElementById("searchInput").value = "";
+    render();
+  });
+  document.getElementById("monthPrevBtn").addEventListener("click", function () {
+    state.selectedMonth = shiftMonth(state.selectedMonth, -1);
+    state.visibleCount = 15;
+    render();
+  });
+  document.getElementById("monthNextBtn").addEventListener("click", function () {
+    var currentMonth = todayISO().slice(0, 7);
+    if (state.selectedMonth >= currentMonth) return;
+    state.selectedMonth = shiftMonth(state.selectedMonth, 1);
+    state.visibleCount = 15;
+    render();
+  });
+  document.getElementById("monthTodayBtn").addEventListener("click", function () {
+    state.selectedMonth = todayISO().slice(0, 7);
+    state.visibleCount = 15;
     render();
   });
   document.getElementById("lightboxClose").addEventListener("click", function () {
