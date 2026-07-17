@@ -202,10 +202,32 @@
         <button class="bz-btn" type="submit" style="margin-top:0; flex:1;">Dodaj</button>
         <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="importImageBtn">📷 Uvezi sa slike</button>
       </div>
+      <div class="bz-form-row" style="margin-top:8px;">
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="scanQrBtn">🧾 Skeniraj QR fiskalnog računa</button>
+      </div>
     </form>
     <input type="file" id="importImageInput" accept="image/*" style="display:none;" />
+    <input type="file" id="qrImageInput" accept="image/*" style="display:none;" />
     <div class="bz-loading" id="ocrLoading" style="display:none;">Čitam sliku...</div>
+    <div class="bz-loading" id="qrLoading" style="display:none;">Čitam QR kod...</div>
     <div class="bz-error" id="errorMsg" style="display:none;"></div>
+  </div>
+
+  <div class="bz-panel" id="qrResultPanel" style="display:none;">
+    <div class="bz-section-title">Fiskalni račun prepoznat</div>
+    <div class="bz-hint" id="qrResultHint" style="margin-bottom:10px;"></div>
+    <div class="bz-form-row">
+      <input class="bz-input desc" id="qrDesc" placeholder="Opis" value="Fiskalni račun" />
+      <input class="bz-input amount" id="qrAmount" placeholder="Iznos" inputmode="decimal" />
+    </div>
+    <div class="bz-form-row" style="margin-top:8px;">
+      <select class="bz-input" id="qrCategory" style="flex:1;"></select>
+      <select class="bz-input" id="qrPaymentMethod" style="flex:1;"></select>
+    </div>
+    <div class="bz-form-row" style="margin-top:12px;">
+      <button class="bz-btn" id="qrAddBtn" style="flex:1;">Dodaj transakciju</button>
+      <button class="bz-btn ghost" style="margin-top:0; flex:1;" id="qrCancelBtn">Otkaži</button>
+    </div>
   </div>
 
   <div class="bz-panel">
@@ -401,6 +423,7 @@
     } else {
       state.transactions = loadTransactionsFor(id);
       state.categories = loadCategoriesFor(id, ws.preset);
+      state.catModel = loadCatModel();
     }
     state.categoryFilter = null;
     state.paymentFilter = null;
@@ -527,6 +550,7 @@
     paymentMethods: [],
     paymentFilter: null,
     payExpanded: false,
+    catModel: {},
     balanceRevealed: false
   };
 
@@ -542,6 +566,7 @@
     } else {
       state.transactions = loadTransactionsFor(state.activeWorkspace);
       state.categories = loadCategoriesFor(state.activeWorkspace, ws.preset);
+      state.catModel = loadCatModel();
     }
   })();
 
@@ -604,9 +629,44 @@
     return "Ostalo";
   }
 
+  function loadCatModel() {
+    try { return JSON.parse(localStorage.getItem("bz_catmodel_" + state.activeWorkspace) || "{}"); } catch (e) { return {}; }
+  }
+  function saveCatModel() {
+    localStorage.setItem("bz_catmodel_" + state.activeWorkspace, JSON.stringify(state.catModel));
+  }
+  function wordsOf(text) {
+    return normalizeText(text).split(/[^a-z0-9čćžšđ]+/i).filter(function (w) { return w.length >= 3; });
+  }
+  function trainCategory(description, category) {
+    if (!description || !category || category === "Prihod" || category === "Transfer") return;
+    var words = wordsOf(description);
+    if (words.length === 0) return;
+    if (!state.catModel[category]) state.catModel[category] = {};
+    words.forEach(function (w) { state.catModel[category][w] = (state.catModel[category][w] || 0) + 1; });
+    saveCatModel();
+  }
+  function predictCategory(description) {
+    var words = wordsOf(description);
+    if (words.length === 0) return null;
+    var bestCat = null, bestScore = 0;
+    Object.keys(state.catModel).forEach(function (cat) {
+      var score = 0;
+      words.forEach(function (w) { score += state.catModel[cat][w] || 0; });
+      if (score > bestScore) { bestScore = score; bestCat = cat; }
+    });
+    return bestScore > 0 ? bestCat : null;
+  }
+  function guessCategory(t) {
+    if (t.amount > 0) return "Prihod";
+    var learned = predictCategory(t.description);
+    if (learned && categoryNames().indexOf(learned) !== -1) return learned;
+    return categorizeByKeywords(t);
+  }
+
   function runCategorization(items) {
     if (items.length === 0) return;
-    items.forEach(function (t) { if (t.category === null) t.category = categorizeByKeywords(t); });
+    items.forEach(function (t) { if (t.category === null) t.category = guessCategory(t); });
     saveTransactions();
     render();
   }
@@ -645,6 +705,100 @@
       document.head.appendChild(s);
     });
     return tesseractLoadPromise;
+  }
+
+  var jsQrLoadPromise = null;
+  function loadJsQR() {
+    if (window.jsQR) return Promise.resolve();
+    if (jsQrLoadPromise) return jsQrLoadPromise;
+    jsQrLoadPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
+      s.onload = resolve;
+      s.onerror = function () { reject(new Error("Nije uspelo učitavanje QR biblioteke (proveri internet konekciju).")); };
+      document.head.appendChild(s);
+    });
+    return jsQrLoadPromise;
+  }
+
+  function decodeQrFromFile(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = function () {
+        var img = new Image();
+        img.onerror = reject;
+        img.onload = function () {
+          var canvas = document.createElement("canvas");
+          canvas.width = img.width; canvas.height = img.height;
+          var ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          var code = window.jsQR(imageData.data, imageData.width, imageData.height);
+          resolve(code ? code.data : null);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function extractAmountFromHtml(html) {
+    var patterns = [
+      /Укупан износ[^\d]{0,20}([\d.,]+)/i,
+      /Ukupan iznos[^\d]{0,20}([\d.,]+)/i,
+      /Total[^\d]{0,20}([\d.,]+)/i
+    ];
+    for (var i = 0; i < patterns.length; i++) {
+      var m = html.match(patterns[i]);
+      if (m) {
+        var digits = m[1].replace(/\./g, "").replace(",", ".");
+        var val = parseFloat(digits);
+        if (!isNaN(val)) return val;
+      }
+    }
+    return null;
+  }
+
+  function runQrScan(file) {
+    document.getElementById("qrLoading").style.display = "block";
+    showError("");
+    loadJsQR().then(function () {
+      return decodeQrFromFile(file);
+    }).then(function (data) {
+      document.getElementById("qrLoading").style.display = "none";
+      if (!data) {
+        showError("Nisam pronašao QR kod na slici. Probaj jasniju sliku, bliže uslikaj sam kod.");
+        return;
+      }
+      if (!/^https?:\/\//i.test(data)) {
+        showError("QR kod ne sadrži link ka fiskalnom sistemu. Sadržaj: " + data.slice(0, 80));
+        return;
+      }
+      window.open(data, "_blank");
+      openQrResultPanel(null, "Otvorio sam zvaničnu potvrdu računa u novom tabu — prepiši tačan iznos odatle.");
+      fetch(data).then(function (r) { return r.text(); }).then(function (html) {
+        var amt = extractAmountFromHtml(html);
+        if (amt) {
+          document.getElementById("qrAmount").value = amt;
+          document.getElementById("qrResultHint").textContent = "Iznos automatski pročitan sa zvanične potvrde — proveri pre potvrde.";
+        }
+      }).catch(function () { /* CORS blokira - ostaje ručni unos, panel je već otvoren */ });
+    }).catch(function (e) {
+      document.getElementById("qrLoading").style.display = "none";
+      showError("QR skeniranje nije uspelo: " + e.message);
+    });
+  }
+
+  function openQrResultPanel(amount, hint) {
+    document.getElementById("qrResultPanel").style.display = "block";
+    document.getElementById("qrResultHint").textContent = hint || "";
+    document.getElementById("qrDesc").value = "Fiskalni račun";
+    document.getElementById("qrAmount").value = amount || "";
+    var catSel = document.getElementById("qrCategory");
+    catSel.innerHTML = categoryNames().map(function (c) { return '<option value="' + c + '">' + escapeHtml(c) + '</option>'; }).join("");
+    var paySel = document.getElementById("qrPaymentMethod");
+    paySel.innerHTML = state.paymentMethods.map(function (m) { return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>'; }).join("");
   }
 
   function tokenToAmount(token) {
@@ -700,7 +854,7 @@
         return;
       }
       importCandidates = candidates.map(function (c) {
-        return { description: c.description, amount: c.amount, sign: "expense", category: categorizeByKeywords({ amount: -1, description: c.description }), include: true };
+        return { description: c.description, amount: c.amount, sign: "expense", category: guessCategory({ amount: -1, description: c.description }), include: true };
       });
       renderImportReview();
       document.getElementById("importReviewPanel").style.display = "block";
@@ -1238,7 +1392,7 @@
       sel.addEventListener("change", function () {
         var id = sel.getAttribute("data-catselect");
         var t = state.transactions.filter(function (t) { return t.id === id; })[0];
-        if (t) t.category = sel.value;
+        if (t) { t.category = sel.value; trainCategory(t.description, sel.value); }
         state.editingId = null;
         saveTransactions();
         render();
@@ -1274,6 +1428,7 @@
     var t = { id: uid(), description: descEl.value.trim(), amount: signMode === "expense" ? -Math.abs(val) : Math.abs(val), date: todayISO(), category: chosenCategory, paymentMethod: payEl.value || null };
     state.transactions = [t].concat(state.transactions);
     saveTransactions();
+    if (chosenCategory) trainCategory(t.description, chosenCategory);
     descEl.value = ""; amountEl.value = ""; state.manualCategoryTouched = false;
     render();
     if (!chosenCategory) runCategorization([t]);
@@ -1302,7 +1457,7 @@
     if (state.manualCategoryTouched) return;
     var desc = this.value;
     if (!desc.trim()) return;
-    var guess = categorizeByKeywords({ amount: signMode === "expense" ? -1 : 1, description: desc });
+    var guess = guessCategory({ amount: signMode === "expense" ? -1 : 1, description: desc });
     var sel = document.getElementById("manualCategory");
     if (categoryNames().indexOf(guess) !== -1) sel.value = guess;
   });
@@ -1434,6 +1589,31 @@
     runOcrImport(this.files[0]);
     this.value = "";
   });
+  document.getElementById("scanQrBtn").addEventListener("click", function () {
+    document.getElementById("qrImageInput").click();
+  });
+  document.getElementById("qrImageInput").addEventListener("change", function () {
+    if (!this.files || !this.files[0]) return;
+    runQrScan(this.files[0]);
+    this.value = "";
+  });
+  document.getElementById("qrCancelBtn").addEventListener("click", function () {
+    document.getElementById("qrResultPanel").style.display = "none";
+  });
+  document.getElementById("qrAddBtn").addEventListener("click", function () {
+    var descEl = document.getElementById("qrDesc");
+    var amountEl = document.getElementById("qrAmount");
+    var catEl = document.getElementById("qrCategory");
+    var payEl = document.getElementById("qrPaymentMethod");
+    var val = parseFloat(String(amountEl.value).replace(",", "."));
+    if (!descEl.value.trim() || isNaN(val) || val <= 0) { alert("Unesi opis i validan iznos."); return; }
+    var t = { id: uid(), description: descEl.value.trim(), amount: -Math.abs(val), date: todayISO(), category: catEl.value, paymentMethod: payEl.value || null };
+    state.transactions = [t].concat(state.transactions);
+    trainCategory(t.description, t.category);
+    saveTransactions();
+    document.getElementById("qrResultPanel").style.display = "none";
+    render();
+  });
   document.getElementById("cancelImportBtn").addEventListener("click", function () {
     importCandidates = [];
     document.getElementById("importReviewPanel").style.display = "none";
@@ -1446,6 +1626,7 @@
       var val = Math.abs(parseFloat(c.amount));
       return { id: uid(), description: c.description.trim(), amount: c.sign === "expense" ? -val : val, date: todayISO(), category: c.category || "Ostalo" };
     });
+    newTx.forEach(function (t) { if (t.category) trainCategory(t.description, t.category); });
     state.transactions = newTx.concat(state.transactions);
     saveTransactions();
     importCandidates = [];
