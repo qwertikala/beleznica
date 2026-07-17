@@ -149,6 +149,9 @@
     <input type="text" id="newTabInput" placeholder="Novi tab (npr. Binance)" />
     <button id="addTabBtn">+</button>
   </div>
+  <div class="bz-drawer-tab" id="backupDrawerBtn" style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px;">
+    <span>💾 Backup / Izvoz</span>
+  </div>
 </div>
 
 <div class="bz-root"><div class="bz-wrap">
@@ -194,11 +197,11 @@
       </div>
       <div class="bz-form-row" style="margin-top:12px;">
         <button class="bz-btn" type="submit" style="margin-top:0; flex:1;">Dodaj</button>
-        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="importImageBtn">📷 Uvezi sa slike</button>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="importImageBtn">📷 Sa slike</button>
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
-        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="scanQrCameraBtn">🧾 Skeniraj QR (kamera)</button>
-        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="scanQrGalleryBtn">🖼️ Iz galerije</button>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="scanQrCameraBtn">🧾 QR kamera</button>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="scanQrGalleryBtn">🖼️ Galerija</button>
       </div>
     </form>
     <input type="file" id="importImageInput" accept="image/*" style="display:none;" />
@@ -329,6 +332,24 @@
     </div>
   </div>
 
+  <div id="backupView" style="display:none;">
+    <div class="bz-panel">
+      <div class="bz-section-title">💾 Backup i izvoz</div>
+      <div class="bz-hint" style="margin-bottom:12px;">Izvozi sve tabove odjednom (Beležnica, Trading212, Krediti, sve što imaš).</div>
+      <button class="bz-btn" id="exportJsonBtn" style="width:100%; margin-bottom:10px;">📦 JSON backup (sigurnosna kopija — za vraćanje)</button>
+      <button class="bz-btn ghost" id="exportXlsxBtn" style="width:100%; margin-top:0; margin-bottom:10px;">📊 Izvezi u Excel (.xlsx)</button>
+      <button class="bz-btn ghost" id="exportPdfBtn" style="width:100%; margin-top:0;">📄 Izvezi u PDF</button>
+      <div class="bz-loading" id="exportLoading" style="display:none;">Pripremam fajl...</div>
+    </div>
+
+    <div class="bz-panel">
+      <div class="bz-section-title">Uvoz / vraćanje iz backupa</div>
+      <div class="bz-hint" style="margin-bottom:12px; color:var(--rust);">Pažnja: vraćanje iz JSON backupa PREPISUJE sve trenutne podatke u aplikaciji onim iz fajla. Koristi samo ako si sigurna/siguran, ili ako si nešto izgubio/la pa se vraćaš na staru kopiju.</div>
+      <input type="file" id="importJsonInput" accept="application/json,.json" style="display:none;" />
+      <button class="bz-btn ghost" id="importJsonBtn" style="width:100%;">⤴ Uvezi JSON backup</button>
+    </div>
+  </div>
+
 </div></div>
 
 <div id="lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:100; align-items:center; justify-content:center; padding:20px;">
@@ -436,6 +457,7 @@
     state.visibleCount = 15;
     state.selectedMonth = todayISO().slice(0, 7);
     state.balanceRevealed = false;
+    state.currentView = "normal";
     var s = document.getElementById("searchInput"); if (s) s.value = "";
     render();
   }
@@ -555,6 +577,7 @@
     paymentFilter: null,
     payExpanded: false,
     accExpanded: false,
+    currentView: "normal",
     catModel: {},
     balanceRevealed: false
   };
@@ -806,6 +829,174 @@
     paySel.innerHTML = state.paymentMethods.map(function (m) { return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>'; }).join("");
   }
 
+  // ---- BACKUP / EXPORT / IMPORT ----
+
+  function collectBackupData() {
+    var data = {};
+    state.workspaces.forEach(function (w) {
+      if (w.type === "loans") {
+        data[w.id] = { type: "loans", loans: loadLoansFor(w.id) };
+      } else {
+        data[w.id] = {
+          type: "general",
+          transactions: loadTransactionsFor(w.id),
+          categories: loadCategoriesFor(w.id, w.preset),
+          catModel: (function () {
+            try { return JSON.parse(localStorage.getItem("bz_catmodel_" + w.id) || "{}"); } catch (e) { return {}; }
+          })()
+        };
+      }
+    });
+    return {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      workspaces: state.workspaces,
+      activeWorkspace: state.activeWorkspace,
+      paymentMethods: state.paymentMethods,
+      data: data
+    };
+  }
+
+  function downloadBlob(content, filename, mime) {
+    var blob = new Blob([content], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+
+  function exportJson() {
+    var backup = collectBackupData();
+    downloadBlob(JSON.stringify(backup, null, 2), "beleznica-backup-" + todayISO() + ".json", "application/json");
+  }
+
+  var sheetJsLoadPromise = null;
+  function loadSheetJS() {
+    if (window.XLSX) return Promise.resolve();
+    if (sheetJsLoadPromise) return sheetJsLoadPromise;
+    sheetJsLoadPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+      s.onload = resolve;
+      s.onerror = function () { reject(new Error("Nije uspelo učitavanje Excel biblioteke.")); };
+      document.head.appendChild(s);
+    });
+    return sheetJsLoadPromise;
+  }
+
+  function sheetNameFor(name) {
+    return name.replace(/[\\\/\?\*\[\]:]/g, " ").slice(0, 31) || "List";
+  }
+
+  function exportXlsx() {
+    document.getElementById("exportLoading").style.display = "block";
+    loadSheetJS().then(function () {
+      var backup = collectBackupData();
+      var wb = XLSX.utils.book_new();
+      state.workspaces.forEach(function (w) {
+        var d = backup.data[w.id];
+        var rows;
+        if (d.type === "loans") {
+          rows = d.loans.map(function (l) {
+            return { Naziv: l.name, "Iznos rate": l.installmentAmount, "Preostalo rata": l.remainingCount, "Ukupno rata": l.totalCount || "", "Datum dospeća": l.dueDate || "" };
+          });
+        } else {
+          rows = d.transactions.map(function (t) {
+            return { Datum: t.date, Opis: t.description, Kategorija: t.category || "", Iznos: t.amount, "Način plaćanja": t.paymentMethod || "" };
+          });
+        }
+        if (rows.length === 0) rows = [{ "Nema podataka": "" }];
+        var ws = XLSX.utils.json_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, sheetNameFor(w.name));
+      });
+      XLSX.writeFile(wb, "beleznica-izvoz-" + todayISO() + ".xlsx");
+      document.getElementById("exportLoading").style.display = "none";
+    }).catch(function (e) {
+      document.getElementById("exportLoading").style.display = "none";
+      alert(e.message);
+    });
+  }
+
+  var jsPdfLoadPromise = null;
+  function loadJsPdf() {
+    if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve();
+    if (jsPdfLoadPromise) return jsPdfLoadPromise;
+    jsPdfLoadPromise = new Promise(function (resolve, reject) {
+      var s1 = document.createElement("script");
+      s1.src = "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js";
+      s1.onload = function () {
+        var s2 = document.createElement("script");
+        s2.src = "https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js";
+        s2.onload = resolve;
+        s2.onerror = function () { reject(new Error("Nije uspelo učitavanje PDF biblioteke.")); };
+        document.head.appendChild(s2);
+      };
+      s1.onerror = function () { reject(new Error("Nije uspelo učitavanje PDF biblioteke.")); };
+      document.head.appendChild(s1);
+    });
+    return jsPdfLoadPromise;
+  }
+
+  function exportPdf() {
+    document.getElementById("exportLoading").style.display = "block";
+    loadJsPdf().then(function () {
+      var backup = collectBackupData();
+      var doc = new window.jspdf.jsPDF();
+      var first = true;
+      state.workspaces.forEach(function (w) {
+        if (!first) doc.addPage();
+        first = false;
+        var d = backup.data[w.id];
+        doc.setFontSize(16);
+        doc.text(w.name, 14, 18);
+        doc.setFontSize(9);
+        doc.text("Izvezeno: " + todayISO(), 14, 24);
+        var head, body;
+        if (d.type === "loans") {
+          head = [["Naziv", "Rata", "Preostalo", "Ukupno", "Dospeće"]];
+          body = d.loans.map(function (l) { return [l.name, String(l.installmentAmount), String(l.remainingCount), l.totalCount ? String(l.totalCount) : "-", l.dueDate || "-"]; });
+        } else {
+          head = [["Datum", "Opis", "Kategorija", "Iznos", "Način plaćanja"]];
+          body = d.transactions.map(function (t) { return [t.date, t.description, t.category || "-", (t.amount >= 0 ? "+" : "") + t.amount, t.paymentMethod || "-"]; });
+        }
+        if (body.length === 0) body = [["Nema podataka", "", "", "", ""]];
+        doc.autoTable({ head: head, body: body, startY: 30, styles: { fontSize: 8 } });
+      });
+      doc.save("beleznica-izvoz-" + todayISO() + ".pdf");
+      document.getElementById("exportLoading").style.display = "none";
+    }).catch(function (e) {
+      document.getElementById("exportLoading").style.display = "none";
+      alert(e.message);
+    });
+  }
+
+  function importJsonBackup(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      var parsed;
+      try { parsed = JSON.parse(reader.result); } catch (e) { alert("Fajl nije validan JSON backup."); return; }
+      if (!parsed || !parsed.data || !parsed.workspaces) { alert("Ovo ne izgleda kao ispravan Beležnica backup fajl."); return; }
+      if (!confirm("Ovo će PREPISATI sve trenutne podatke u aplikaciji podacima iz backupa od " + (parsed.exportedAt ? parsed.exportedAt.slice(0, 10) : "?") + ". Nastaviti?")) return;
+      localStorage.setItem("bz_workspaces", JSON.stringify(parsed.workspaces));
+      if (parsed.paymentMethods) localStorage.setItem("bz_payment_methods", JSON.stringify(parsed.paymentMethods));
+      if (parsed.activeWorkspace) localStorage.setItem("bz_active_workspace", parsed.activeWorkspace);
+      Object.keys(parsed.data).forEach(function (wsId) {
+        var d = parsed.data[wsId];
+        if (d.type === "loans") {
+          localStorage.setItem("bz_loans_" + wsId, JSON.stringify(d.loans || []));
+        } else {
+          localStorage.setItem("bz_tx_" + wsId, JSON.stringify(d.transactions || []));
+          localStorage.setItem("bz_cat_" + wsId, JSON.stringify(d.categories || {}));
+          localStorage.setItem("bz_catmodel_" + wsId, JSON.stringify(d.catModel || {}));
+        }
+      });
+      alert("Backup je vraćen. Aplikacija će se sad osvežiti.");
+      location.reload();
+    };
+    reader.readAsText(file);
+  }
+
   function tokenToAmount(token) {
     var isEur = /€/.test(token);
     var digits = token.replace(/[^0-9.,]/g, "");
@@ -1019,7 +1210,9 @@
       });
     });
     var wsObj = state.workspaces.filter(function (w) { return w.id === state.activeWorkspace; })[0];
-    document.getElementById("appTitle").innerHTML = wsObj ? escapeHtml(wsObj.name) : "Beležnica";
+    document.getElementById("appTitle").innerHTML = state.currentView === "backup" ? "Backup / Izvoz" : (wsObj ? escapeHtml(wsObj.name) : "Beležnica");
+    var backupBtn = document.getElementById("backupDrawerBtn");
+    if (state.currentView === "backup") backupBtn.classList.add("active"); else backupBtn.classList.remove("active");
   }
 
   function openDrawer() {
@@ -1081,6 +1274,14 @@
 
   function render() {
     renderDrawer();
+
+    if (state.currentView === "backup") {
+      document.getElementById("ledgerView").style.display = "none";
+      document.getElementById("loansView").style.display = "none";
+      document.getElementById("backupView").style.display = "block";
+      return;
+    }
+    document.getElementById("backupView").style.display = "none";
 
     var ws = currentWorkspaceObj();
     if (ws.type === "loans") {
@@ -1570,6 +1771,22 @@
 
   document.getElementById("hamburgerBtn").addEventListener("click", openDrawer);
   document.getElementById("drawerOverlay").addEventListener("click", closeDrawer);
+  document.getElementById("backupDrawerBtn").addEventListener("click", function () {
+    state.currentView = "backup";
+    render();
+    closeDrawer();
+  });
+  document.getElementById("exportJsonBtn").addEventListener("click", exportJson);
+  document.getElementById("exportXlsxBtn").addEventListener("click", exportXlsx);
+  document.getElementById("exportPdfBtn").addEventListener("click", exportPdf);
+  document.getElementById("importJsonBtn").addEventListener("click", function () {
+    document.getElementById("importJsonInput").click();
+  });
+  document.getElementById("importJsonInput").addEventListener("change", function () {
+    if (!this.files || !this.files[0]) return;
+    importJsonBackup(this.files[0]);
+    this.value = "";
+  });
   document.getElementById("addTabBtn").addEventListener("click", function () {
     var input = document.getElementById("newTabInput");
     var id = addWorkspace(input.value);
