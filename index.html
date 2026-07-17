@@ -175,12 +175,6 @@
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title">Stanje po računima</div>
-    <div class="bz-hint" style="margin-bottom:8px;">Ukupno stanje po računu/kartici (sve transakcije i prenosi, ne samo ovaj mesec).</div>
-    <div id="accountBalanceRows"></div>
-  </div>
-
-  <div class="bz-panel">
     <div class="bz-section-title">Dodaj transakciju</div>
     <form id="manualForm">
       <div class="bz-form-row">
@@ -281,6 +275,14 @@
     <button class="bz-btn ghost" id="payToggleBtn" style="margin-top:0; width:100%;">Prikaži rashode po načinu plaćanja ▾</button>
     <div id="payRowsWrap" style="display:none; margin-top:12px;">
       <div id="payRows"></div>
+    </div>
+  </div>
+
+  <div class="bz-panel">
+    <button class="bz-btn ghost" id="accToggleBtn" style="margin-top:0; width:100%;">Prikaži stanje po računima ▾</button>
+    <div id="accountBalanceWrap" style="display:none; margin-top:12px;">
+      <div class="bz-hint" style="margin-bottom:8px;">Ukupno stanje po računu/kartici (sve transakcije i prenosi, ne samo ovaj mesec).</div>
+      <div id="accountBalanceRows"></div>
     </div>
   </div>
 
@@ -550,6 +552,7 @@
     paymentMethods: [],
     paymentFilter: null,
     payExpanded: false,
+    accExpanded: false,
     catModel: {},
     balanceRevealed: false
   };
@@ -1119,6 +1122,10 @@
     document.getElementById("valIncome").textContent = fmt(income);
     document.getElementById("valExpense").textContent = fmt(expense);
 
+    var accToggleBtn = document.getElementById("accToggleBtn");
+    accToggleBtn.textContent = state.accExpanded ? "Sakrij stanje po računima ▴" : "Prikaži stanje po računima ▾";
+    document.getElementById("accountBalanceWrap").style.display = state.accExpanded ? "block" : "none";
+
     var byAccountAllTime = {};
     state.transactions.forEach(function (t) {
       var p = t.paymentMethod || "Nepoznato";
@@ -1499,6 +1506,10 @@
   });
   document.getElementById("payToggleBtn").addEventListener("click", function () {
     state.payExpanded = !state.payExpanded;
+    render();
+  });
+  document.getElementById("accToggleBtn").addEventListener("click", function () {
+    state.accExpanded = !state.accExpanded;
     render();
   });
   document.getElementById("monthPrevBtn").addEventListener("click", function () {
