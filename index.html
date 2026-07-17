@@ -197,11 +197,13 @@
         <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="importImageBtn">📷 Uvezi sa slike</button>
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
-        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="scanQrBtn">🧾 Skeniraj QR fiskalnog računa</button>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="scanQrCameraBtn">🧾 Skeniraj QR (kamera)</button>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1;" id="scanQrGalleryBtn">🖼️ Iz galerije</button>
       </div>
     </form>
     <input type="file" id="importImageInput" accept="image/*" style="display:none;" />
-    <input type="file" id="qrImageInput" accept="image/*" style="display:none;" />
+    <input type="file" id="qrImageInputCamera" accept="image/*" capture="environment" style="display:none;" />
+    <input type="file" id="qrImageInputGallery" accept="image/*" style="display:none;" />
     <div class="bz-loading" id="ocrLoading" style="display:none;">Čitam sliku...</div>
     <div class="bz-loading" id="qrLoading" style="display:none;">Čitam QR kod...</div>
     <div class="bz-error" id="errorMsg" style="display:none;"></div>
@@ -1600,10 +1602,18 @@
     runOcrImport(this.files[0]);
     this.value = "";
   });
-  document.getElementById("scanQrBtn").addEventListener("click", function () {
-    document.getElementById("qrImageInput").click();
+  document.getElementById("scanQrCameraBtn").addEventListener("click", function () {
+    document.getElementById("qrImageInputCamera").click();
   });
-  document.getElementById("qrImageInput").addEventListener("change", function () {
+  document.getElementById("scanQrGalleryBtn").addEventListener("click", function () {
+    document.getElementById("qrImageInputGallery").click();
+  });
+  document.getElementById("qrImageInputCamera").addEventListener("change", function () {
+    if (!this.files || !this.files[0]) return;
+    runQrScan(this.files[0]);
+    this.value = "";
+  });
+  document.getElementById("qrImageInputGallery").addEventListener("change", function () {
     if (!this.files || !this.files[0]) return;
     runQrScan(this.files[0]);
     this.value = "";
