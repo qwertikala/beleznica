@@ -102,6 +102,10 @@
   .bz-pin-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 9px 12px; font-size: 15px; letter-spacing: 4px; text-align: center; width: 140px; }
   .bz-filter-sum { background: var(--surface2); border: 1px solid var(--gold); border-radius: 4px; padding: 10px 12px; margin-bottom: 12px; font-size: 12.5px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
   .bz-filter-sum b { font-family: Georgia, serif; }
+  .bz-stanrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .bz-stanrow:last-child { border-bottom: none; }
+  .bz-stanrow label { font-size: 13px; flex: 1; }
+  .bz-stanrow input { width: 120px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 8px 10px; font-size: 13px; font-family: inherit; text-align: right; }
   select.bz-input { -webkit-appearance: none; appearance: none; }
   a { color: var(--gold); }
 
@@ -149,7 +153,10 @@
     <input type="text" id="newTabInput" placeholder="Novi tab (npr. Binance)" />
     <button id="addTabBtn">+</button>
   </div>
-  <div class="bz-drawer-tab" id="backupDrawerBtn" style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px;">
+  <div class="bz-drawer-tab" id="insightsDrawerBtn" style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px;">
+    <span>📊 Analiza</span>
+  </div>
+  <div class="bz-drawer-tab" id="backupDrawerBtn">
     <span>💾 Backup / Izvoz</span>
   </div>
 </div>
@@ -175,6 +182,13 @@
     <div class="bz-card balance" id="balanceCard" style="cursor:pointer;"><div class="bz-card-label">Stanje 🔒</div><div class="bz-card-value" id="valBalance">••••••</div></div>
     <div class="bz-card income"><div class="bz-card-label">Prihodi</div><div class="bz-card-value" id="valIncome">0 RSD</div></div>
     <div class="bz-card expense"><div class="bz-card-label">Rashodi</div><div class="bz-card-value" id="valExpense">0 RSD</div></div>
+  </div>
+
+  <div class="bz-panel" id="stanQuickPanel" style="display:none;">
+    <div class="bz-section-title">Mesečni računi</div>
+    <div class="bz-hint" style="margin-bottom:10px;">Uvek isti računi — samo upiši cifru za ovaj mesec.</div>
+    <div id="stanQuickRows"></div>
+    <button class="bz-btn" id="stanQuickSaveBtn" style="width:100%; margin-top:8px;">Sačuvaj mesečne račune</button>
   </div>
 
   <div class="bz-panel">
@@ -215,6 +229,7 @@
   <div class="bz-panel" id="qrResultPanel" style="display:none;">
     <div class="bz-section-title">Fiskalni račun prepoznat</div>
     <div class="bz-hint" id="qrResultHint" style="margin-bottom:10px;"></div>
+    <button class="bz-btn ghost" id="qrOpenLinkBtn" type="button" style="width:100%; margin-top:0; margin-bottom:10px; display:none;">🔗 Otvori zvaničnu potvrdu</button>
     <div class="bz-form-row">
       <input class="bz-input desc" id="qrDesc" placeholder="Opis" value="Fiskalni račun" />
       <input class="bz-input amount" id="qrAmount" placeholder="Iznos" inputmode="decimal" />
@@ -350,6 +365,23 @@
     </div>
   </div>
 
+  <div id="insightsView" style="display:none;">
+    <div class="bz-panel">
+      <div class="bz-section-title">📊 Analiza troškova</div>
+      <div class="bz-hint" style="margin-bottom:12px;">Postavi pitanje o svojoj potrošnji u ovom tabu — ništa se ne čuva, samo prikaz. Probaj npr: „koliko trošim na kladionicu“, „kojim danima najviše trošim“, „po mesecima“, „po računima“.</div>
+      <div class="bz-form-row">
+        <input class="bz-input desc" id="insightQuery" placeholder="Šta te zanima?" />
+        <button class="bz-btn" style="margin-top:0;" id="insightAskBtn">Prikaži</button>
+      </div>
+      <div id="insightResult" style="margin-top:16px; display:none;">
+        <div id="insightSummary" style="font-size:13px; margin-bottom:10px;"></div>
+        <canvas id="insightCanvas" width="600" height="320" style="width:100%; height:auto; background:var(--surface2); border-radius:4px;"></canvas>
+        <button class="bz-btn ghost" id="insightDownloadBtn" style="margin-top:10px; width:100%;">⬇ Preuzmi kao sliku</button>
+      </div>
+    </div>
+    <button class="bz-btn ghost" id="insightBackBtn" style="width:100%;">← Nazad na početnu</button>
+  </div>
+
 </div></div>
 
 <div id="lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:100; align-items:center; justify-content:center; padding:20px;">
@@ -379,6 +411,46 @@
     "Kirija/Rata stana": "#4A7A9B", "Struja": "#C9A227", "Infostan": "#8C6E4F",
     "Internet": "#5B7DA6", "Održavanje": "#B08968", "Ostalo": "#6E7A72"
   };
+  var STAN_BILL_CATEGORIES = ["Kirija/Rata stana", "Struja", "Infostan", "Internet", "Održavanje"];
+
+  function renderStanQuickPanel() {
+    var ws = currentWorkspaceObj();
+    var panel = document.getElementById("stanQuickPanel");
+    if (ws.preset !== "stan") { panel.style.display = "none"; return; }
+    panel.style.display = "block";
+    var container = document.getElementById("stanQuickRows");
+    var monthTxLocal = state.transactions.filter(function (t) { return t.date.slice(0, 7) === state.selectedMonth; });
+    container.innerHTML = STAN_BILL_CATEGORIES.map(function (cat) {
+      var existing = monthTxLocal.filter(function (t) { return t.category === cat; })[0];
+      var val = existing ? Math.abs(existing.amount) : "";
+      return '<div class="bz-stanrow"><label>' + escapeHtml(cat) + '</label>' +
+        '<input type="number" step="0.01" inputmode="decimal" data-stanbill="' + escapeHtml(cat) + '" value="' + val + '" placeholder="0" /></div>';
+    }).join("");
+  }
+  function saveStanQuickPanel() {
+    var inputs = document.querySelectorAll("[data-stanbill]");
+    var count = 0;
+    Array.prototype.forEach.call(inputs, function (inp) {
+      var cat = inp.getAttribute("data-stanbill");
+      var val = parseFloat(String(inp.value).replace(",", "."));
+      var monthTxLocal = state.transactions.filter(function (t) { return t.date.slice(0, 7) === state.selectedMonth; });
+      var existing = monthTxLocal.filter(function (t) { return t.category === cat; })[0];
+      if (isNaN(val) || val <= 0) {
+        if (existing) state.transactions = state.transactions.filter(function (t) { return t.id !== existing.id; });
+        return;
+      }
+      if (existing) {
+        existing.amount = -Math.abs(val);
+      } else {
+        state.transactions = [{ id: uid(), description: cat, amount: -Math.abs(val), date: todayISO(), category: cat, paymentMethod: null }].concat(state.transactions);
+      }
+      count++;
+    });
+    saveTransactions();
+    render();
+    alert("Mesečni računi sačuvani (" + count + ").");
+  }
+
   var EXTRA_PALETTE = ["#5B7DA6", "#8A5B7D", "#6B8A5B", "#A6835B", "#5BA695", "#A65B5B", "#7D5BA6", "#A6A65B"];
   var PROTECTED_CATEGORIES = ["Prihod", "Ostalo", "Depozit", "Povlačenje"];
 
@@ -752,18 +824,36 @@
   function decodeQrFromFile(file) {
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();
-      reader.onerror = reject;
+      reader.onerror = function () { reject(new Error("Nije uspelo čitanje fajla.")); };
       reader.onload = function () {
         var img = new Image();
-        img.onerror = reject;
+        img.onerror = function () { reject(new Error("Slika se nije mogla učitati.")); };
         img.onload = function () {
-          var canvas = document.createElement("canvas");
-          canvas.width = img.width; canvas.height = img.height;
-          var ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          var code = window.jsQR(imageData.data, imageData.width, imageData.height);
-          resolve(code ? code.data : null);
+          try {
+            var sizesToTry = [1600, 1000, 2400, img.width];
+            var tried = {};
+            var found = null;
+            for (var i = 0; i < sizesToTry.length && !found; i++) {
+              var maxDim = sizesToTry[i];
+              if (tried[maxDim]) continue;
+              tried[maxDim] = true;
+              var w = img.width, h = img.height;
+              if (w > maxDim || h > maxDim) {
+                if (w >= h) { h = Math.round(h * maxDim / w); w = maxDim; }
+                else { w = Math.round(w * maxDim / h); h = maxDim; }
+              }
+              var canvas = document.createElement("canvas");
+              canvas.width = w; canvas.height = h;
+              var ctx = canvas.getContext("2d", { willReadFrequently: true });
+              ctx.drawImage(img, 0, 0, w, h);
+              var imageData = ctx.getImageData(0, 0, w, h);
+              var code = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "attemptBoth" });
+              if (code && code.data) found = code.data;
+            }
+            resolve(found);
+          } catch (err) {
+            reject(new Error("Greška pri obradi slike (možda je prevelika): " + err.message));
+          }
         };
         img.src = reader.result;
       };
@@ -788,38 +878,47 @@
     return null;
   }
 
+  var lastQrUrl = null;
+
   function runQrScan(file) {
     document.getElementById("qrLoading").style.display = "block";
+    document.getElementById("qrResultPanel").style.display = "none";
     showError("");
     loadJsQR().then(function () {
       return decodeQrFromFile(file);
     }).then(function (data) {
       document.getElementById("qrLoading").style.display = "none";
       if (!data) {
-        showError("Nisam pronašao QR kod na slici. Probaj jasniju sliku, bliže uslikaj sam kod.");
+        showError("Nisam pronašao QR kod na slici. Uslikaj bliže, samo sam kod, sa dobrim osvetljenjem i bez zamućenja.");
         return;
       }
       if (!/^https?:\/\//i.test(data)) {
-        showError("QR kod ne sadrži link ka fiskalnom sistemu. Sadržaj: " + data.slice(0, 80));
+        openQrResultPanel(null, "QR kod pročitan, ali ne vodi ka fiskalnom sistemu. Sadržaj: " + data.slice(0, 80));
+        lastQrUrl = null;
         return;
       }
-      window.open(data, "_blank");
-      openQrResultPanel(null, "Otvorio sam zvaničnu potvrdu računa u novom tabu — prepiši tačan iznos odatle.");
+      lastQrUrl = data;
+      openQrResultPanel(null, "QR kod uspešno pročitan. Otvori zvaničnu potvrdu dugmetom ispod da prepišeš tačan iznos, ili sačekaj — pokušavam da ga učitam automatski.");
       fetch(data).then(function (r) { return r.text(); }).then(function (html) {
         var amt = extractAmountFromHtml(html);
         if (amt) {
           document.getElementById("qrAmount").value = amt;
           document.getElementById("qrResultHint").textContent = "Iznos automatski pročitan sa zvanične potvrde — proveri pre potvrde.";
+        } else {
+          document.getElementById("qrResultHint").textContent = "QR kod pročitan. Otvori zvaničnu potvrdu dugmetom ispod i prepiši iznos ručno.";
         }
-      }).catch(function () { /* CORS blokira - ostaje ručni unos, panel je već otvoren */ });
+      }).catch(function () {
+        document.getElementById("qrResultHint").textContent = "QR kod pročitan. Otvori zvaničnu potvrdu dugmetom ispod i prepiši iznos ručno (automatsko čitanje nije dozvoljeno sa državnog sajta).";
+      });
     }).catch(function (e) {
       document.getElementById("qrLoading").style.display = "none";
-      showError("QR skeniranje nije uspelo: " + e.message);
+      showError("QR skeniranje nije uspelo: " + e.message + " — probaj ponovo, po mogućstvu jasniju sliku samo QR koda.");
     });
   }
 
   function openQrResultPanel(amount, hint) {
-    document.getElementById("qrResultPanel").style.display = "block";
+    var panel = document.getElementById("qrResultPanel");
+    panel.style.display = "block";
     document.getElementById("qrResultHint").textContent = hint || "";
     document.getElementById("qrDesc").value = "Fiskalni račun";
     document.getElementById("qrAmount").value = amount || "";
@@ -827,7 +926,168 @@
     catSel.innerHTML = categoryNames().map(function (c) { return '<option value="' + c + '">' + escapeHtml(c) + '</option>'; }).join("");
     var paySel = document.getElementById("qrPaymentMethod");
     paySel.innerHTML = state.paymentMethods.map(function (m) { return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>'; }).join("");
+    var openLinkBtn = document.getElementById("qrOpenLinkBtn");
+    openLinkBtn.style.display = lastQrUrl ? "block" : "none";
+    panel.scrollIntoView({ behavior: "smooth", block: "center" });
   }
+
+  // ---- ANALIZA (INSIGHTS) ----
+
+  var DAY_NAMES = ["Nedelja", "Ponedeljak", "Utorak", "Sreda", "Četvrtak", "Petak", "Subota"];
+
+  function drawBarChart(canvas, labels, values, opts) {
+    opts = opts || {};
+    var ctx = canvas.getContext("2d");
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    var padL = 60, padB = 70, padT = 20, padR = 20;
+    var chartW = W - padL - padR, chartH = H - padT - padB;
+    var maxVal = Math.max.apply(null, values.concat([1]));
+    var barGap = 10;
+    var barW = Math.max(6, (chartW / values.length) - barGap);
+    ctx.strokeStyle = "#2A362D";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, H - padB);
+    ctx.lineTo(W - padR, H - padB);
+    ctx.stroke();
+    ctx.fillStyle = "#8FA08F";
+    ctx.font = "10px sans-serif";
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + chartH - (chartH * g / 4);
+      var gval = Math.round(maxVal * g / 4);
+      ctx.fillText(String(gval), 4, gy + 3);
+      ctx.strokeStyle = "rgba(255,255,255,0.05)";
+      ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(W - padR, gy); ctx.stroke();
+    }
+    values.forEach(function (v, i) {
+      var x = padL + i * (chartW / values.length) + barGap / 2;
+      var barH = (v / maxVal) * chartH;
+      var y = padT + chartH - barH;
+      ctx.fillStyle = opts.color || "#C9A227";
+      ctx.fillRect(x, y, barW, barH);
+      ctx.fillStyle = "#ECE8DD";
+      ctx.font = "9px sans-serif";
+      ctx.textAlign = "center";
+      if (v > 0) ctx.fillText(fmt(v).replace(" RSD", ""), x + barW / 2, y - 4);
+      ctx.fillStyle = "#8FA08F";
+      ctx.save();
+      var lx = x + barW / 2, ly = H - padB + 14;
+      ctx.translate(lx, ly);
+      if (labels.length > 8) { ctx.rotate(-Math.PI / 4); ctx.textAlign = "right"; }
+      else ctx.textAlign = "center";
+      ctx.fillText(labels[i], 0, 0);
+      ctx.restore();
+    });
+    ctx.textAlign = "left";
+  }
+
+  function runInsightQuery(queryRaw) {
+    var q = normalizeText(queryRaw);
+    var expenses = state.transactions.filter(function (t) { return t.amount < 0 && !t.isTransfer; });
+    var canvas = document.getElementById("insightCanvas");
+    var summaryEl = document.getElementById("insightSummary");
+    var resultEl = document.getElementById("insightResult");
+
+    // pokušaj da nađe kategoriju spomenutu u pitanju
+    var matchedCat = null;
+    categoryNames().forEach(function (c) {
+      if (q.indexOf(normalizeText(c)) !== -1) matchedCat = c;
+    });
+    // pokušaj da nađe način plaćanja spomenut u pitanju
+    var matchedPay = null;
+    state.paymentMethods.forEach(function (m) {
+      if (q.indexOf(normalizeText(m)) !== -1) matchedPay = m;
+    });
+
+    if (matchedCat) {
+      var catTx = expenses.filter(function (t) { return t.category === matchedCat; });
+      if (catTx.length === 0) {
+        summaryEl.textContent = "Nema troškova u kategoriji „" + matchedCat + "”.";
+        resultEl.style.display = "block";
+        drawBarChart(canvas, [], []);
+        return;
+      }
+      var byMonth = {};
+      catTx.forEach(function (t) { var m = t.date.slice(0, 7); byMonth[m] = (byMonth[m] || 0) + Math.abs(t.amount); });
+      var months = Object.keys(byMonth).sort().slice(-6);
+      var total = catTx.reduce(function (s, t) { return s + Math.abs(t.amount); }, 0);
+      summaryEl.innerHTML = "Ukupno na <b>" + escapeHtml(matchedCat) + "</b>: <b>" + fmt(total) + "</b> kroz " + catTx.length + " transakcija. Prikaz po mesecima (poslednjih " + months.length + "):";
+      drawBarChart(canvas, months.map(monthLabelShort), months.map(function (m) { return byMonth[m]; }), { color: state.categories[matchedCat] || "#C9A227" });
+      resultEl.style.display = "block";
+      return;
+    }
+
+    if (matchedPay) {
+      var payTx = expenses.filter(function (t) { return (t.paymentMethod || "Nepoznato") === matchedPay; });
+      var byCatForPay = {};
+      payTx.forEach(function (t) { var c = t.category || "Ostalo"; byCatForPay[c] = (byCatForPay[c] || 0) + Math.abs(t.amount); });
+      var catsP = Object.keys(byCatForPay).sort(function (a, b) { return byCatForPay[b] - byCatForPay[a]; });
+      var totalP = payTx.reduce(function (s, t) { return s + Math.abs(t.amount); }, 0);
+      summaryEl.innerHTML = "Ukupno plaćeno preko <b>" + escapeHtml(matchedPay) + "</b>: <b>" + fmt(totalP) + "</b>. Raspodela po kategoriji:";
+      drawBarChart(canvas, catsP, catsP.map(function (c) { return byCatForPay[c]; }), { color: "#4A7A9B" });
+      resultEl.style.display = "block";
+      return;
+    }
+
+    if (q.indexOf("dan") !== -1) {
+      var byDay = [0, 0, 0, 0, 0, 0, 0];
+      expenses.forEach(function (t) {
+        var d = new Date(t.date + "T00:00:00");
+        byDay[d.getDay()] += Math.abs(t.amount);
+      });
+      var order = [1, 2, 3, 4, 5, 6, 0];
+      var labels = order.map(function (i) { return DAY_NAMES[i].slice(0, 3); });
+      var vals = order.map(function (i) { return byDay[i]; });
+      var maxIdx = order[vals.indexOf(Math.max.apply(null, vals))];
+      summaryEl.innerHTML = "Najviše trošiš <b>" + DAY_NAMES[maxIdx] + "</b>. Raspodela po danima u nedelji (sve vreme):";
+      drawBarChart(canvas, labels, vals, { color: "#BC6A4A" });
+      resultEl.style.display = "block";
+      return;
+    }
+
+    if (q.indexOf("mesec") !== -1 || q.indexOf("mjesec") !== -1) {
+      var byM = {};
+      expenses.forEach(function (t) { var m = t.date.slice(0, 7); byM[m] = (byM[m] || 0) + Math.abs(t.amount); });
+      var ms = Object.keys(byM).sort().slice(-8);
+      summaryEl.innerHTML = "Rashodi po mesecima (poslednjih " + ms.length + "):";
+      drawBarChart(canvas, ms.map(monthLabelShort), ms.map(function (m) { return byM[m]; }), { color: "#C9A227" });
+      resultEl.style.display = "block";
+      return;
+    }
+
+    if (q.indexOf("racun") !== -1 || q.indexOf("kartic") !== -1 || q.indexOf("kes") !== -1) {
+      var byAcc = {};
+      expenses.forEach(function (t) { var p = t.paymentMethod || "Nepoznato"; byAcc[p] = (byAcc[p] || 0) + Math.abs(t.amount); });
+      var accs = Object.keys(byAcc).sort(function (a, b) { return byAcc[b] - byAcc[a]; });
+      summaryEl.textContent = "Rashodi po načinu plaćanja:";
+      drawBarChart(canvas, accs, accs.map(function (a) { return byAcc[a]; }), { color: "#4A7A9B" });
+      resultEl.style.display = "block";
+      return;
+    }
+
+    // podrazumevano: po kategoriji, sve vreme
+    var byCat = {};
+    expenses.forEach(function (t) { var c = t.category || "Ostalo"; byCat[c] = (byCat[c] || 0) + Math.abs(t.amount); });
+    var cats = Object.keys(byCat).sort(function (a, b) { return byCat[b] - byCat[a]; });
+    if (cats.length === 0) {
+      summaryEl.textContent = "Još nema troškova za analizu u ovom tabu.";
+      drawBarChart(canvas, [], []);
+      resultEl.style.display = "block";
+      return;
+    }
+    summaryEl.innerHTML = "Nisam prepoznao tačno šta pitaš, pa evo pregleda rashoda po kategoriji (probaj da spomeneš naziv kategorije, „dani”, „meseci” ili način plaćanja):";
+    drawBarChart(canvas, cats, cats.map(function (c) { return byCat[c]; }), { color: "#C9A227" });
+    resultEl.style.display = "block";
+  }
+
+  function monthLabelShort(m) {
+    var parts = m.split("-");
+    return MONTH_NAMES[parseInt(parts[1], 10) - 1].slice(0, 3) + " " + parts[0].slice(2);
+  }
+
+
 
   // ---- BACKUP / EXPORT / IMPORT ----
 
@@ -1210,9 +1470,11 @@
       });
     });
     var wsObj = state.workspaces.filter(function (w) { return w.id === state.activeWorkspace; })[0];
-    document.getElementById("appTitle").innerHTML = state.currentView === "backup" ? "Backup / Izvoz" : (wsObj ? escapeHtml(wsObj.name) : "Beležnica");
+    document.getElementById("appTitle").innerHTML = state.currentView === "backup" ? "Backup / Izvoz" : state.currentView === "insights" ? "Analiza" : (wsObj ? escapeHtml(wsObj.name) : "Beležnica");
     var backupBtn = document.getElementById("backupDrawerBtn");
     if (state.currentView === "backup") backupBtn.classList.add("active"); else backupBtn.classList.remove("active");
+    var insightsBtn = document.getElementById("insightsDrawerBtn");
+    if (state.currentView === "insights") insightsBtn.classList.add("active"); else insightsBtn.classList.remove("active");
   }
 
   function openDrawer() {
@@ -1278,10 +1540,19 @@
     if (state.currentView === "backup") {
       document.getElementById("ledgerView").style.display = "none";
       document.getElementById("loansView").style.display = "none";
+      document.getElementById("insightsView").style.display = "none";
       document.getElementById("backupView").style.display = "block";
       return;
     }
     document.getElementById("backupView").style.display = "none";
+
+    if (state.currentView === "insights") {
+      document.getElementById("ledgerView").style.display = "none";
+      document.getElementById("loansView").style.display = "none";
+      document.getElementById("insightsView").style.display = "block";
+      return;
+    }
+    document.getElementById("insightsView").style.display = "none";
 
     var ws = currentWorkspaceObj();
     if (ws.type === "loans") {
@@ -1299,6 +1570,7 @@
     renderFilterPaymentSelect();
     renderPaymentMethodSelect();
     renderTransferSelects();
+    renderStanQuickPanel();
 
     document.getElementById("monthLabel").textContent = monthLabel(state.selectedMonth);
     var currentMonth = todayISO().slice(0, 7);
@@ -1771,6 +2043,32 @@
 
   document.getElementById("hamburgerBtn").addEventListener("click", openDrawer);
   document.getElementById("drawerOverlay").addEventListener("click", closeDrawer);
+  document.getElementById("insightsDrawerBtn").addEventListener("click", function () {
+    state.currentView = "insights";
+    render();
+    closeDrawer();
+    document.getElementById("insightResult").style.display = "none";
+    document.getElementById("insightQuery").value = "";
+  });
+  document.getElementById("insightBackBtn").addEventListener("click", function () {
+    state.currentView = "normal";
+    render();
+  });
+  document.getElementById("insightAskBtn").addEventListener("click", function () {
+    var q = document.getElementById("insightQuery").value;
+    if (!q.trim()) return;
+    runInsightQuery(q);
+  });
+  document.getElementById("insightQuery").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); document.getElementById("insightAskBtn").click(); }
+  });
+  document.getElementById("insightDownloadBtn").addEventListener("click", function () {
+    var canvas = document.getElementById("insightCanvas");
+    var link = document.createElement("a");
+    link.download = "analiza-" + todayISO() + ".png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
   document.getElementById("backupDrawerBtn").addEventListener("click", function () {
     state.currentView = "backup";
     render();
@@ -1835,6 +2133,10 @@
     runQrScan(this.files[0]);
     this.value = "";
   });
+  document.getElementById("qrOpenLinkBtn").addEventListener("click", function () {
+    if (lastQrUrl) window.open(lastQrUrl, "_blank");
+  });
+  document.getElementById("stanQuickSaveBtn").addEventListener("click", saveStanQuickPanel);
   document.getElementById("qrCancelBtn").addEventListener("click", function () {
     document.getElementById("qrResultPanel").style.display = "none";
   });
