@@ -377,7 +377,7 @@
     <div id="qrModalScanStage" class="bz-panel">
       <div class="bz-section-title">Skeniraj QR fiskalnog računa</div>
       <div style="position:relative; border-radius:4px; overflow:hidden; background:#000;">
-        <video id="qrVideo" playsinline muted style="width:100%; display:block; max-height:60vh; object-fit:cover;"></video>
+        <video id="qrVideo" playsinline muted autoplay style="width:100%; display:block; max-height:60vh; object-fit:cover;"></video>
         <div style="position:absolute; inset:15%; border:2px solid var(--gold); border-radius:8px; pointer-events:none;"></div>
       </div>
       <div id="qrModalStatus" class="bz-hint" style="margin-top:10px; text-align:center;">Pokrećem kameru...</div>
@@ -914,6 +914,8 @@
       qrStream.getTracks().forEach(function (t) { t.stop(); });
       qrStream = null;
     }
+    var video = document.getElementById("qrVideo");
+    if (video) video.srcObject = null;
   }
 
   function startCameraQrScan() {
@@ -929,12 +931,11 @@
       qrStream = stream;
       var video = document.getElementById("qrVideo");
       video.srcObject = stream;
-      video.onloadedmetadata = function () {
-        video.play();
-        qrScanActive = true;
-        document.getElementById("qrModalStatus").textContent = "Uperi kameru u QR kod na računu...";
-        qrScanFrameLoop();
-      };
+      var playPromise = video.play();
+      if (playPromise && playPromise.catch) playPromise.catch(function () { /* neki browseri traže gest, video se ipak prikazuje */ });
+      qrScanActive = true;
+      document.getElementById("qrModalStatus").textContent = "Uperi kameru u QR kod na računu...";
+      qrScanFrameLoop();
     }).catch(function (e) {
       document.getElementById("qrModalStatus").textContent = "Nije uspelo pokretanje kamere (" + e.message + "). Koristi „Iz galerije” umesto toga.";
     });
@@ -943,8 +944,8 @@
   function qrScanFrameLoop() {
     if (!qrScanActive) return;
     var video = document.getElementById("qrVideo");
-    if (video.videoWidth > 0) {
-      var w = Math.min(video.videoWidth, 700);
+    if (video.videoWidth > 0 && video.readyState >= 2) {
+      var w = Math.min(video.videoWidth, 900);
       var h = Math.round(video.videoHeight * (w / video.videoWidth));
       qrScanCanvas.width = w; qrScanCanvas.height = h;
       var ctx = qrScanCanvas.getContext("2d", { willReadFrequently: true });
