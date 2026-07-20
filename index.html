@@ -142,6 +142,29 @@
   .bz-loan-actions button { font-size: 11.5px; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-family: inherit; }
   .bz-pay-btn { background: var(--gold); color: #14170F; border: none; font-weight: 600; }
   .bz-loan-del { background: none; border: 1px solid var(--border); color: var(--muted); }
+
+  .bz-debt-row { padding: 12px 4px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .bz-debt-row:last-child { border-bottom: none; }
+  .bz-debt-row.settled { opacity: 0.5; }
+  .bz-debt-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .bz-debt-name { font-weight: 600; font-size: 13.5px; }
+  .bz-debt-dir { font-size: 10.5px; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+  .bz-debt-dir.iowe { background: rgba(188,106,74,0.18); color: var(--rust); }
+  .bz-debt-dir.owedtome { background: rgba(127,168,138,0.18); color: var(--sage); }
+  .bz-debt-meta { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 11.5px; margin-bottom: 8px; }
+  .bz-debt-meta b { color: var(--text); font-family: Georgia, serif; }
+  .bz-debt-payments { color: var(--muted); font-size: 10.5px; margin-bottom: 8px; }
+  .bz-debt-actions { display: flex; gap: 8px; }
+  .bz-debt-actions button { font-size: 11.5px; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-family: inherit; }
+  .bz-pay-partial-btn { background: var(--gold); color: #14170F; border: none; font-weight: 600; }
+  .bz-debt-del { background: none; border: 1px solid var(--border); color: var(--muted); }
+
+  .bz-wishlist-row { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .bz-wishlist-row:last-child { border-bottom: none; }
+  .bz-wishlist-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; }
+  .bz-wishlist-text { flex: 1; }
+  .bz-wishlist-row.done .bz-wishlist-text { text-decoration: line-through; color: var(--muted); }
+  .bz-wishlist-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; }
 </style>
 </head>
 <body>
@@ -214,8 +237,7 @@
         <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="importImageBtn">📷 Sa slike</button>
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
-        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="scanQrCameraBtn">🧾 QR kamera</button>
-        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="scanQrGalleryBtn">🖼️ Galerija</button>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="scanQrGalleryBtn">🖼️ Uvezi QR sa slike (galerija)</button>
       </div>
     </form>
     <input type="file" id="importImageInput" accept="image/*" style="display:none;" />
@@ -296,6 +318,42 @@
       <button class="bz-btn" style="margin-top:0" id="addCategoryBtn">Dodaj</button>
     </div>
   </div>
+
+  <div class="bz-panel">
+    <div class="bz-section-title">💸 Zaduženja</div>
+    <div class="bz-hint" style="margin-bottom:10px;">Ko duguje tebi, i kome duguješ ti. Ostaje otvoreno dok se ne otplati u potpunosti — možeš uplaćivati deo po deo.</div>
+    <div class="bz-summary" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:16px;">
+      <div class="bz-card income"><div class="bz-card-label">Duguju meni</div><div class="bz-card-value" id="debtOwedToMe">0 RSD</div></div>
+      <div class="bz-card expense"><div class="bz-card-label">Ja dugujem</div><div class="bz-card-value" id="debtIOwe">0 RSD</div></div>
+      <div class="bz-card balance"><div class="bz-card-label">Neto</div><div class="bz-card-value" id="debtNet">0 RSD</div></div>
+    </div>
+    <form id="debtForm">
+      <div class="bz-form-row">
+        <input class="bz-input desc" id="debtPerson" placeholder="Ime osobe" />
+        <input class="bz-input amount" id="debtAmount" placeholder="Iznos" inputmode="decimal" />
+      </div>
+      <div class="bz-form-row" style="margin-top:8px;">
+        <div class="bz-sign">
+          <button type="button" class="expense active" id="debtDirIOwe">Ja dugujem</button>
+          <button type="button" class="income" id="debtDirOwedToMe">Duguje meni</button>
+        </div>
+      </div>
+      <button class="bz-btn" type="submit" style="margin-top:12px; width:100%;">Dodaj zaduženje</button>
+    </form>
+    <div id="debtRows" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="bz-panel">
+    <div class="bz-section-title">🎁 Lista želja</div>
+    <div class="bz-hint" style="margin-bottom:10px;">Ostaje na listi dok ne štikliraš da si završio/la — automatski se prenosi u naredni period.</div>
+    <form id="wishlistForm">
+      <div class="bz-form-row">
+        <input class="bz-input desc" id="wishlistInput" placeholder="Šta želiš da kupiš / uradiš?" style="flex:1;" />
+        <button class="bz-btn" type="submit" style="margin-top:0;">Dodaj</button>
+      </div>
+    </form>
+    <div id="wishlistRows" style="margin-top:12px;"></div>
+  </div>
   </div>
 
   <div id="loansView" style="display:none;">
@@ -374,16 +432,7 @@
   <div style="max-width:480px; width:100%; position:relative; margin-top:20px;">
     <button id="qrModalCloseBtn" style="position:absolute; top:-8px; right:-8px; z-index:2; background:var(--gold); color:#14170F; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; cursor:pointer;">×</button>
 
-    <div id="qrModalScanStage" class="bz-panel">
-      <div class="bz-section-title">Skeniraj QR fiskalnog računa</div>
-      <div style="position:relative; border-radius:4px; overflow:hidden; background:#000;">
-        <video id="qrVideo" playsinline muted autoplay style="width:100%; display:block; max-height:60vh; object-fit:cover;"></video>
-        <div style="position:absolute; inset:15%; border:2px solid var(--gold); border-radius:8px; pointer-events:none;"></div>
-      </div>
-      <div id="qrModalStatus" class="bz-hint" style="margin-top:10px; text-align:center;">Pokrećem kameru...</div>
-    </div>
-
-    <div id="qrModalConfirmStage" class="bz-panel" style="display:none;">
+    <div id="qrModalConfirmStage" class="bz-panel">
       <div class="bz-section-title">Fiskalni račun prepoznat</div>
       <div class="bz-hint" id="qrResultHint" style="margin-bottom:10px;"></div>
       <button class="bz-btn ghost" id="qrOpenLinkBtn" type="button" style="width:100%; margin-top:0; margin-bottom:10px; display:none;">🔗 Otvori zvaničnu potvrdu (opciono)</button>
@@ -522,6 +571,18 @@
   function saveLoans() {
     localStorage.setItem("bz_loans_" + state.activeWorkspace, JSON.stringify(state.loans));
   }
+  function loadDebtsFor(id) {
+    try { return JSON.parse(localStorage.getItem("bz_debts_" + id) || "[]"); } catch (e) { return []; }
+  }
+  function saveDebts() {
+    localStorage.setItem("bz_debts_" + state.activeWorkspace, JSON.stringify(state.debts));
+  }
+  function loadWishlistFor(id) {
+    try { return JSON.parse(localStorage.getItem("bz_wishlist_" + id) || "[]"); } catch (e) { return []; }
+  }
+  function saveWishlist() {
+    localStorage.setItem("bz_wishlist_" + state.activeWorkspace, JSON.stringify(state.wishlist));
+  }
   function currentWorkspaceObj() {
     return state.workspaces.filter(function (w) { return w.id === state.activeWorkspace; })[0] || { type: "general", preset: "general" };
   }
@@ -535,6 +596,8 @@
       state.transactions = loadTransactionsFor(id);
       state.categories = loadCategoriesFor(id, ws.preset);
       state.catModel = loadCatModel();
+      state.debts = loadDebtsFor(id);
+      state.wishlist = loadWishlistFor(id);
     }
     state.categoryFilter = null;
     state.paymentFilter = null;
@@ -649,10 +712,13 @@
     transactions: [],
     categories: {},
     loans: [],
+    debts: [],
+    wishlist: [],
     tab: "paste",
     busy: false,
     editingId: null,
     editingDateId: null,
+    editingPayId: null,
     editingAmountId: null,
     manualCategoryTouched: false,
     categoryFilter: null,
@@ -681,6 +747,8 @@
       state.transactions = loadTransactionsFor(state.activeWorkspace);
       state.categories = loadCategoriesFor(state.activeWorkspace, ws.preset);
       state.catModel = loadCatModel();
+      state.debts = loadDebtsFor(state.activeWorkspace);
+      state.wishlist = loadWishlistFor(state.activeWorkspace);
     }
   })();
 
@@ -688,6 +756,8 @@
   function todayISO() { return new Date().toISOString().slice(0, 10); }
   function fmt(n) { return Math.abs(n).toLocaleString("sr-RS", { maximumFractionDigits: 0 }) + " RSD"; }
   var MONTH_NAMES = ["Januar", "Februar", "Mart", "April", "Maj", "Jun", "Jul", "Avgust", "Septembar", "Oktobar", "Novembar", "Decembar"];
+  // Index prati JS Date.getDay(): 0=Nedelja, 1=Ponedeljak, 2=Utorak, 3=Sreda, 4=Četvrtak, 5=Petak, 6=Subota
+  var WEEKDAY_COLORS = ["#9B6FA0", "#D9534F", "#4A90D9", "#5BA695", "#D9A23B", "#6B9E78", "#BC6A4A"];
   function monthLabel(m) {
     var parts = m.split("-");
     var idx = parseInt(parts[1], 10) - 1;
@@ -893,74 +963,12 @@
   }
 
   var lastQrUrl = null;
-  var qrStream = null;
-  var qrScanRAF = null;
-  var qrScanActive = false;
-  var qrScanCanvas = document.createElement("canvas");
 
-  function openQrModal(showScanStage) {
+  function openQrModal() {
     document.getElementById("qrModal").style.display = "flex";
-    document.getElementById("qrModalScanStage").style.display = showScanStage ? "block" : "none";
-    document.getElementById("qrModalConfirmStage").style.display = showScanStage ? "none" : "block";
   }
   function closeQrModal() {
-    stopCameraStream();
     document.getElementById("qrModal").style.display = "none";
-  }
-  function stopCameraStream() {
-    qrScanActive = false;
-    if (qrScanRAF) { cancelAnimationFrame(qrScanRAF); qrScanRAF = null; }
-    if (qrStream) {
-      qrStream.getTracks().forEach(function (t) { t.stop(); });
-      qrStream = null;
-    }
-    var video = document.getElementById("qrVideo");
-    if (video) video.srcObject = null;
-  }
-
-  function startCameraQrScan() {
-    openQrModal(true);
-    document.getElementById("qrModalStatus").textContent = "Pokrećem kameru...";
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      document.getElementById("qrModalStatus").textContent = "Kamera nije dostupna u ovom browseru. Koristi „Iz galerije” umesto toga.";
-      return;
-    }
-    loadJsQR().then(function () {
-      return navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
-    }).then(function (stream) {
-      qrStream = stream;
-      var video = document.getElementById("qrVideo");
-      video.srcObject = stream;
-      var playPromise = video.play();
-      if (playPromise && playPromise.catch) playPromise.catch(function () { /* neki browseri traže gest, video se ipak prikazuje */ });
-      qrScanActive = true;
-      document.getElementById("qrModalStatus").textContent = "Uperi kameru u QR kod na računu...";
-      qrScanFrameLoop();
-    }).catch(function (e) {
-      document.getElementById("qrModalStatus").textContent = "Nije uspelo pokretanje kamere (" + e.message + "). Koristi „Iz galerije” umesto toga.";
-    });
-  }
-
-  function qrScanFrameLoop() {
-    if (!qrScanActive) return;
-    var video = document.getElementById("qrVideo");
-    if (video.videoWidth > 0 && video.readyState >= 2) {
-      var w = Math.min(video.videoWidth, 900);
-      var h = Math.round(video.videoHeight * (w / video.videoWidth));
-      qrScanCanvas.width = w; qrScanCanvas.height = h;
-      var ctx = qrScanCanvas.getContext("2d", { willReadFrequently: true });
-      ctx.drawImage(video, 0, 0, w, h);
-      try {
-        var imageData = ctx.getImageData(0, 0, w, h);
-        var code = window.jsQR(imageData.data, w, h, { inversionAttempts: "attemptBoth" });
-        if (code && code.data) {
-          stopCameraStream();
-          processQrData(code.data);
-          return;
-        }
-      } catch (e) { /* preskoči frejm ako ima problem, probaj sledeći */ }
-    }
-    qrScanRAF = requestAnimationFrame(qrScanFrameLoop);
   }
 
   function runQrScan(file) {
@@ -982,7 +990,7 @@
   }
 
   function processQrData(data) {
-    openQrModal(false);
+    openQrModal();
     if (!/^https?:\/\//i.test(data)) {
       lastQrUrl = null;
       fillQrConfirmFields(null, "QR kod pročitan, ali ne vodi ka fiskalnom sistemu. Sadržaj: " + data.slice(0, 80));
@@ -1483,6 +1491,126 @@
     saveLoans();
     render();
   }
+  function addDebt(person, amount, direction) {
+    var item = { id: uid(), person: person, direction: direction, originalAmount: amount, payments: [], createdDate: todayISO() };
+    state.debts = [item].concat(state.debts);
+    saveDebts();
+    render();
+  }
+  function addDebtPayment(id, amount) {
+    var d = state.debts.filter(function (x) { return x.id === id; })[0];
+    if (!d) return;
+    d.payments.push({ date: todayISO(), amount: amount });
+    saveDebts();
+    render();
+  }
+  function deleteDebt(id) {
+    if (!confirm("Obrisati ovo zaduženje i istoriju uplata?")) return;
+    state.debts = state.debts.filter(function (d) { return d.id !== id; });
+    saveDebts();
+    render();
+  }
+  function debtRemaining(d) {
+    var paid = d.payments.reduce(function (s, p) { return s + p.amount; }, 0);
+    return Math.max(0, d.originalAmount - paid);
+  }
+  function renderDebts() {
+    var owedToMe = 0, iOwe = 0;
+    state.debts.forEach(function (d) {
+      var rem = debtRemaining(d);
+      if (d.direction === "owedtome") owedToMe += rem; else iOwe += rem;
+    });
+    document.getElementById("debtOwedToMe").textContent = fmt(owedToMe);
+    document.getElementById("debtIOwe").textContent = fmt(iOwe);
+    var net = owedToMe - iOwe;
+    document.getElementById("debtNet").textContent = (net >= 0 ? "+" : "-") + fmt(net);
+
+    var container = document.getElementById("debtRows");
+    if (state.debts.length === 0) {
+      container.innerHTML = '<div class="bz-empty">Još nema unetih zaduženja.</div>';
+      return;
+    }
+    var sorted = state.debts.slice().sort(function (a, b) {
+      var ra = debtRemaining(a), rb = debtRemaining(b);
+      if (ra === 0 && rb !== 0) return 1;
+      if (rb === 0 && ra !== 0) return -1;
+      return a.createdDate < b.createdDate ? 1 : -1;
+    });
+    container.innerHTML = sorted.map(function (d) {
+      var rem = debtRemaining(d);
+      var settled = rem <= 0;
+      var dirLabel = d.direction === "owedtome" ? "duguje meni" : "ja dugujem";
+      var dirClass = d.direction === "owedtome" ? "owedtome" : "iowe";
+      var paymentsText = d.payments.length ? "Uplate: " + d.payments.map(function (p) { return p.date.slice(5) + " " + fmt(p.amount); }).join(", ") : "";
+      return '<div class="bz-debt-row' + (settled ? ' settled' : '') + '">' +
+        '<div class="bz-debt-top"><span class="bz-debt-name">' + escapeHtml(d.person) + '<span class="bz-debt-dir ' + dirClass + '">' + dirLabel + '</span></span>' +
+        (settled ? '<span style="color:var(--sage); font-size:11px;">✓ izmireno</span>' : '') + '</div>' +
+        '<div class="bz-debt-meta">' +
+        '<span>Ukupno: <b>' + fmt(d.originalAmount) + '</b></span>' +
+        '<span>Preostalo: <b>' + fmt(rem) + '</b></span>' +
+        '</div>' +
+        (paymentsText ? '<div class="bz-debt-payments">' + escapeHtml(paymentsText) + '</div>' : '') +
+        '<div class="bz-debt-actions">' +
+        (settled ? '' : '<button class="bz-pay-partial-btn" data-debtpay="' + d.id + '">+ Uplata</button>') +
+        '<button class="bz-debt-del" data-debtdel="' + d.id + '">Obriši</button>' +
+        '</div></div>';
+    }).join("");
+    Array.prototype.forEach.call(container.querySelectorAll("[data-debtpay]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-debtpay");
+        var d = state.debts.filter(function (x) { return x.id === id; })[0];
+        var rem = debtRemaining(d);
+        var input = prompt("Iznos uplate (preostalo " + fmt(rem) + "):");
+        if (input === null) return;
+        var val = parseFloat(String(input).replace(",", "."));
+        if (isNaN(val) || val <= 0) { alert("Unesi validan iznos."); return; }
+        addDebtPayment(id, Math.min(val, rem));
+      });
+    });
+    Array.prototype.forEach.call(container.querySelectorAll("[data-debtdel]"), function (btn) {
+      btn.addEventListener("click", function () { deleteDebt(btn.getAttribute("data-debtdel")); });
+    });
+  }
+
+  function addWishlistItem(text) {
+    var item = { id: uid(), text: text, done: false };
+    state.wishlist = [item].concat(state.wishlist);
+    saveWishlist();
+    render();
+  }
+  function toggleWishlistItem(id) {
+    var w = state.wishlist.filter(function (x) { return x.id === id; })[0];
+    if (w) w.done = !w.done;
+    saveWishlist();
+    render();
+  }
+  function deleteWishlistItem(id) {
+    state.wishlist = state.wishlist.filter(function (w) { return w.id !== id; });
+    saveWishlist();
+    render();
+  }
+  function renderWishlist() {
+    var container = document.getElementById("wishlistRows");
+    if (state.wishlist.length === 0) {
+      container.innerHTML = '<div class="bz-empty">Još nema stavki na listi želja.</div>';
+      return;
+    }
+    var sorted = state.wishlist.slice().sort(function (a, b) { return (a.done === b.done) ? 0 : (a.done ? 1 : -1); });
+    container.innerHTML = sorted.map(function (w) {
+      return '<div class="bz-wishlist-row' + (w.done ? ' done' : '') + '">' +
+        '<input type="checkbox" data-wishtoggle="' + w.id + '"' + (w.done ? " checked" : "") + ' />' +
+        '<span class="bz-wishlist-text">' + escapeHtml(w.text) + '</span>' +
+        '<button class="bz-wishlist-del" data-wishdel="' + w.id + '">×</button>' +
+        '</div>';
+    }).join("");
+    Array.prototype.forEach.call(container.querySelectorAll("[data-wishtoggle]"), function (cb) {
+      cb.addEventListener("change", function () { toggleWishlistItem(cb.getAttribute("data-wishtoggle")); });
+    });
+    Array.prototype.forEach.call(container.querySelectorAll("[data-wishdel]"), function (btn) {
+      btn.addEventListener("click", function () { deleteWishlistItem(btn.getAttribute("data-wishdel")); });
+    });
+  }
+
   function renderLoansView() {
     var monthly = 0, remainingTotal = 0;
     state.loans.forEach(function (l) {
@@ -1655,6 +1783,8 @@
     renderPaymentMethodSelect();
     renderTransferSelects();
     renderStanQuickPanel();
+    renderDebts();
+    renderWishlist();
 
     document.getElementById("monthLabel").textContent = monthLabel(state.selectedMonth);
     var currentMonth = todayISO().slice(0, 7);
@@ -1824,10 +1954,11 @@
             escapeHtml(t.category || (state.busy ? "..." : "?")) + '</button>';
         }
         var dateHtml;
+        var dayColor = WEEKDAY_COLORS[new Date(t.date + "T00:00:00").getDay()];
         if (state.editingDateId === t.id) {
           dateHtml = '<input type="date" class="bz-date-input" data-dateedit="' + t.id + '" value="' + t.date + '" />';
         } else {
-          dateHtml = '<button class="bz-date-btn" data-editdate="' + t.id + '" title="Promeni datum">' + t.date.slice(5) + '</button>';
+          dateHtml = '<button class="bz-date-btn" data-editdate="' + t.id + '" title="Promeni datum" style="color:' + dayColor + ';">' + t.date.slice(5) + '</button>';
         }
         var receiptBtn = '<button class="bz-receipt-btn' + (t.receipt ? ' has' : '') + '" data-receipt="' + t.id + '" title="' + (t.receipt ? "Pogledaj račun" : "Dodaj fiskalni račun") + '">' + (t.receipt ? "🧾" : "＋") + '</button>';
         var amountHtml;
@@ -1836,7 +1967,15 @@
         } else {
           amountHtml = '<button class="bz-amount-btn bz-amount ' + (t.amount >= 0 ? "pos" : "neg") + '" data-editamount="' + t.id + '" title="Promeni iznos">' + (t.amount >= 0 ? "+" : "-") + fmt(t.amount) + '</button>';
         }
-        var payTag = t.paymentMethod ? '<span style="color:var(--muted); font-size:10.5px;">' + escapeHtml(t.paymentMethod) + '</span>' : '';
+        var payTag;
+        if (state.editingPayId === t.id) {
+          var payOpts = state.paymentMethods.map(function (m) {
+            return '<option value="' + escapeHtml(m) + '"' + (m === t.paymentMethod ? " selected" : "") + '>' + escapeHtml(m) + '</option>';
+          }).join("");
+          payTag = '<select class="bz-select" data-payselect="' + t.id + '"><option value="">—</option>' + payOpts + '</select>';
+        } else {
+          payTag = '<button class="bz-date-btn" data-editpay="' + t.id + '" title="Promeni način plaćanja" style="color:var(--muted);">' + escapeHtml(t.paymentMethod || "način plaćanja?") + '</button>';
+        }
         return '<div class="bz-row">' +
           '<div class="bz-row-top">' +
           '<span class="bz-desc" data-toggledesc="' + t.id + '">' + escapeHtml(t.description) + '</span>' +
@@ -1913,6 +2052,26 @@
       });
       inp.addEventListener("blur", function () {
         state.editingDateId = null;
+        render();
+      });
+    });
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-editpay]"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.editingPayId = btn.getAttribute("data-editpay");
+        render();
+      });
+    });
+    Array.prototype.forEach.call(txContainer.querySelectorAll("[data-payselect]"), function (sel) {
+      sel.addEventListener("change", function () {
+        var id = sel.getAttribute("data-payselect");
+        var t = state.transactions.filter(function (t) { return t.id === id; })[0];
+        if (t) t.paymentMethod = sel.value || null;
+        state.editingPayId = null;
+        saveTransactions();
+        render();
+      });
+      sel.addEventListener("blur", function () {
+        state.editingPayId = null;
         render();
       });
     });
@@ -2201,9 +2360,6 @@
     runOcrImport(this.files[0]);
     this.value = "";
   });
-  document.getElementById("scanQrCameraBtn").addEventListener("click", function () {
-    startCameraQrScan();
-  });
   document.getElementById("scanQrGalleryBtn").addEventListener("click", function () {
     document.getElementById("qrImageInputGallery").click();
   });
@@ -2217,6 +2373,35 @@
     if (lastQrUrl) window.open(lastQrUrl, "_blank");
   });
   document.getElementById("stanQuickSaveBtn").addEventListener("click", saveStanQuickPanel);
+
+  var debtDirection = "iowe";
+  document.getElementById("debtDirIOwe").addEventListener("click", function () {
+    debtDirection = "iowe";
+    document.getElementById("debtDirIOwe").classList.add("active");
+    document.getElementById("debtDirOwedToMe").classList.remove("active");
+  });
+  document.getElementById("debtDirOwedToMe").addEventListener("click", function () {
+    debtDirection = "owedtome";
+    document.getElementById("debtDirOwedToMe").classList.add("active");
+    document.getElementById("debtDirIOwe").classList.remove("active");
+  });
+  document.getElementById("debtForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var personEl = document.getElementById("debtPerson");
+    var amountEl = document.getElementById("debtAmount");
+    var val = parseFloat(String(amountEl.value).replace(",", "."));
+    if (!personEl.value.trim() || isNaN(val) || val <= 0) { alert("Unesi ime osobe i validan iznos."); return; }
+    addDebt(personEl.value.trim(), val, debtDirection);
+    personEl.value = ""; amountEl.value = "";
+  });
+
+  document.getElementById("wishlistForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var input = document.getElementById("wishlistInput");
+    if (!input.value.trim()) return;
+    addWishlistItem(input.value.trim());
+    input.value = "";
+  });
   document.getElementById("qrCancelBtn").addEventListener("click", closeQrModal);
   document.getElementById("qrAddBtn").addEventListener("click", function () {
     var descEl = document.getElementById("qrDesc");
