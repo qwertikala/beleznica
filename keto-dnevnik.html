@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="sr">
 <head>
@@ -272,46 +273,103 @@ const FOOD_DB = [
   {n:"Mlečna čokolada", c:59, p:7.6, f:30},
   {n:"Pasulj, kuvan", c:14, p:8.7, f:0.5},
   {n:"Sočivo, kuvano", c:17, p:9, f:0.4},
+
+  // --- Gotova jela i pripremljena hrana ---
+  {n:"Kajgana", c:1, p:12, f:14},
+  {n:"Viršle", c:3, p:11, f:26},
+  {n:"Kobasica (domaća)", c:2, p:14, f:28},
+  {n:"Pašteta", c:3, p:11, f:28},
+  {n:"Ćevapi", c:1, p:20, f:18},
+  {n:"Pljeskavica (pečena)", c:1, p:18, f:20},
+  {n:"Sarma (kupus, meso, pirinač)", c:8, p:7, f:9},
+  {n:"Punjene paprike (meso, pirinač)", c:9, p:7, f:8},
+  {n:"Pasulj čorba (sa mesom)", c:12, p:7, f:6},
+  {n:"Gulaš (goveđi)", c:5, p:14, f:12},
+  {n:"Musaka (krompir, meso)", c:9, p:8, f:10},
+  {n:"Riblja čorba", c:4, p:8, f:4},
+  {n:"Burek sa mesom", c:28, p:9, f:18},
+  {n:"Pita sa sirom", c:30, p:8, f:16},
+  {n:"Palačinke (bez punjenja)", c:30, p:7, f:8},
+  {n:"Pomfrit", c:35, p:3.5, f:15},
+
+  // --- Prilozi i dodaci ---
+  {n:"Kukuruz šećerac, kuvan", c:19, p:3.2, f:1.2},
+  {n:"Kukuruz (konzerviran)", c:15, p:2.9, f:1.2},
+  {n:"Kiseli kupus", c:2.5, p:1, f:0.1},
+  {n:"Krompir salata (sa majonezom)", c:16, p:2, f:8},
+  {n:"Ajvar", c:9, p:1.5, f:9},
+  {n:"Kisela pavlaka 20%", c:3, p:2.8, f:20},
+  {n:"Majonez", c:1, p:1, f:75},
+  {n:"Kečap", c:22, p:1.2, f:0.2},
+  {n:"Senf", c:5, p:4, f:4},
+  {n:"Kačkavalj", c:1, p:26, f:28},
+  {n:"Grašak, kuvan", c:11, p:5, f:0.4},
+  {n:"Šargarepa", c:7, p:0.9, f:0.2},
+  {n:"Cvekla, kuvana", c:8, p:1.6, f:0.1},
+
+  // --- Voće ---
+  {n:"Kruška", c:12, p:0.4, f:0.1},
+  {n:"Šljiva", c:11, p:0.7, f:0.3},
+  {n:"Grožđe", c:17, p:0.6, f:0.2},
+  {n:"Dinja", c:8, p:0.8, f:0.2},
+  {n:"Lubenica", c:7.5, p:0.6, f:0.2},
+  {n:"Mandarina", c:11, p:0.8, f:0.3},
+  {n:"Pomorandža", c:9, p:0.9, f:0.1},
+
+  // --- Žitarice ---
+  {n:"Ovsene pahuljice", c:58, p:13, f:7},
+  {n:"Kukuruzni hleb (projara)", c:45, p:6, f:8},
+  {n:"Griz, kuvan", c:15, p:2.5, f:0.5},
+
+  // --- Grickalice i slatkiši ---
+  {n:"Čokoladni kolač", c:45, p:5, f:20},
+  {n:"Keks (petit beurre)", c:68, p:7, f:14},
+  {n:"Sladoled (vanila)", c:22, p:3.5, f:11},
+  {n:"Čips (krompirov)", c:52, p:6, f:34},
+
+  // --- Napici ---
+  {n:"Sok od pomorandže (100%)", c:11, p:0.5, f:0.1},
+  {n:"Kokakola", c:10.6, p:0, f:0},
 ];
 
 // ---------- Top 10 predloga obroka po kategoriji ----------
 // Svaki obrok je lista sastojaka {n: naziv iz FOOD_DB, g: grama}
 const MEALS = {
   breakfast: [
-    {name:"Kajgana sa slaninom", items:[{n:"Jaje, celo",g:120},{n:"Slanina",g:30},{n:"Puter",g:5}]},
-    {name:"Avokado i pečena jaja", items:[{n:"Avokado",g:100},{n:"Jaje, celo",g:100},{n:"Feta sir",g:30}]},
-    {name:"Grčki jogurt sa bademima", items:[{n:"Grčki jogurt (pun mm)",g:200},{n:"Bademi",g:20},{n:"Maline",g:50}]},
-    {name:"Omlet sa spanaćem i sirom", items:[{n:"Jaje, celo",g:150},{n:"Spanać, sirov",g:50},{n:"Čedar sir",g:30}]},
-    {name:"Bulletproof kafa i jaja", items:[{n:"Crna kafa",g:250},{n:"Puter",g:15},{n:"MCT ulje",g:10},{n:"Jaje, celo",g:100}]},
-    {name:"Slanina sa pečurkama", items:[{n:"Slanina",g:50},{n:"Pečurke (šampinjoni)",g:100},{n:"Puter",g:10}]},
-    {name:"Chia puding sa malinama", items:[{n:"Chia semenke",g:30},{n:"Kokosovo mleko (konzerva)",g:150},{n:"Maline",g:30}]},
-    {name:"Šunka i sir rolnice", items:[{n:"Šunka (nemasna)",g:80},{n:"Čedar sir",g:40},{n:"Krastavac",g:50}]},
-    {name:"Losos doručak", items:[{n:"Losos",g:80},{n:"Feta sir",g:30},{n:"Krastavac",g:40}]},
-    {name:"Jogurt bowl sa orasima", items:[{n:"Grčki jogurt (pun mm)",g:200},{n:"Orasi",g:20},{n:"Kupine",g:40}]},
+    {name:"Kajgana sa viršlama", items:[{n:"Kajgana",g:150},{n:"Viršle",g:60}]},
+    {name:"Jaja na oko sa slaninom", items:[{n:"Jaje, celo",g:120},{n:"Slanina",g:40}]},
+    {name:"Šunka i kačkavalj rolnice", items:[{n:"Šunka (nemasna)",g:80},{n:"Kačkavalj",g:40},{n:"Krastavac",g:50}]},
+    {name:"Grčki jogurt sa orasima i jagodama", items:[{n:"Grčki jogurt (pun mm)",g:200},{n:"Orasi",g:20},{n:"Jagode",g:60}]},
+    {name:"Omlet sa fetom i paprikom", items:[{n:"Jaje, celo",g:150},{n:"Feta sir",g:30},{n:"Paprika, crvena",g:50}]},
+    {name:"Kajgana sa kačkavaljem", items:[{n:"Kajgana",g:150},{n:"Kačkavalj",g:30}]},
+    {name:"Chia puding sa kupinama", items:[{n:"Chia semenke",g:30},{n:"Kokosovo mleko (konzerva)",g:150},{n:"Kupine",g:40}]},
+    {name:"Kefir sa bademima", items:[{n:"Kefir",g:250},{n:"Bademi",g:20}]},
+    {name:"Viršle sa kiselim kupusom", items:[{n:"Viršle",g:100},{n:"Kiseli kupus",g:100}]},
+    {name:"Jaja sa puterom i krastavcem", items:[{n:"Jaje, celo",g:120},{n:"Puter",g:15},{n:"Krastavac",g:60}]},
   ],
   lunch: [
-    {name:"Pileća salata sa avokadom", items:[{n:"Piletina, belo meso",g:150},{n:"Avokado",g:80},{n:"Zelena salata",g:50},{n:"Maslinovo ulje",g:10}]},
-    {name:"Losos sa brokolijem", items:[{n:"Losos",g:150},{n:"Brokoli",g:150},{n:"Puter",g:10}]},
-    {name:"Burger bez peciva", items:[{n:"Goveđe mleveno meso (80/20)",g:180},{n:"Čedar sir",g:30},{n:"Zelena salata",g:30}]},
+    {name:"Pileća salata", items:[{n:"Piletina, belo meso",g:150},{n:"Zelena salata",g:50},{n:"Krastavac",g:50},{n:"Maslinovo ulje",g:10}]},
+    {name:"Pljeskavica sa kupusom", items:[{n:"Pljeskavica (pečena)",g:200},{n:"Kupus",g:150}]},
+    {name:"Ćevapi sa lukom i ajvarom", items:[{n:"Ćevapi",g:200},{n:"Crni luk",g:50},{n:"Ajvar",g:30}]},
     {name:"Piletina i pire od karfiola", items:[{n:"Piletina, bataci sa kožom",g:200},{n:"Karfiol",g:150},{n:"Puter",g:15}]},
-    {name:"Tuna salata", items:[{n:"Tuna u vodi",g:120},{n:"Feta sir",g:30},{n:"Krastavac",g:60},{n:"Maslinovo ulje",g:10}]},
-    {name:"Škampi sa tikvicama", items:[{n:"Škampi / kozice",g:150},{n:"Tikvice",g:150},{n:"Maslinovo ulje",g:10}]},
+    {name:"Sardine sa salatom", items:[{n:"Sardine",g:100},{n:"Zelena salata",g:50},{n:"Krastavac",g:60},{n:"Maslinovo ulje",g:10}]},
     {name:"Svinjski but sa kupusom", items:[{n:"Svinjski but",g:180},{n:"Kupus",g:150},{n:"Puter",g:10}]},
-    {name:"Ćureći file sa pečurkama", items:[{n:"Ćureći file",g:180},{n:"Pečurke (šampinjoni)",g:100},{n:"Maslinovo ulje",g:10}]},
-    {name:"Sardine sa salatom", items:[{n:"Sardine",g:100},{n:"Zelena salata",g:50},{n:"Paradajz",g:60},{n:"Maslinovo ulje",g:10}]},
-    {name:"Šunka sa paprikom i fetom", items:[{n:"Šunka (nemasna)",g:150},{n:"Paprika, crvena",g:80},{n:"Feta sir",g:30}]},
+    {name:"Ćureći file sa tikvicama", items:[{n:"Ćureći file",g:180},{n:"Tikvice",g:150},{n:"Maslinovo ulje",g:10}]},
+    {name:"Gulaš", items:[{n:"Gulaš (goveđi)",g:300}]},
+    {name:"Punjene paprike", items:[{n:"Punjene paprike (meso, pirinač)",g:350}]},
+    {name:"Pasulj čorba sa slaninom", items:[{n:"Pasulj čorba (sa mesom)",g:350},{n:"Slanina",g:20}]},
   ],
   dinner: [
-    {name:"Piletina sa spanaćem", items:[{n:"Piletina, belo meso",g:150},{n:"Spanać, sirov",g:100},{n:"Puter",g:10}]},
-    {name:"Losos sa avokadom i limunom", items:[{n:"Losos",g:150},{n:"Avokado",g:80},{n:"Limun",g:20}]},
-    {name:"Omlet za veče", items:[{n:"Jaje, celo",g:150},{n:"Feta sir",g:30},{n:"Paradajz",g:50}]},
-    {name:"Tuna i krastavac salata", items:[{n:"Tuna u vodi",g:120},{n:"Krastavac",g:80},{n:"Maslinovo ulje",g:10}]},
+    {name:"Piletina sa kupusom", items:[{n:"Piletina, belo meso",g:150},{n:"Kupus",g:100},{n:"Puter",g:10}]},
+    {name:"Omlet sa fetom i paprikom", items:[{n:"Jaje, celo",g:150},{n:"Feta sir",g:30},{n:"Paprika, crvena",g:50}]},
+    {name:"Viršle sa senfom i kupusom", items:[{n:"Viršle",g:120},{n:"Kiseli kupus",g:100},{n:"Senf",g:10}]},
     {name:"Piletina sa karfiolom", items:[{n:"Piletina, bataci sa kožom",g:180},{n:"Karfiol",g:120},{n:"Puter",g:10}]},
-    {name:"Škampi sa belim lukom", items:[{n:"Škampi / kozice",g:150},{n:"Beli luk",g:5},{n:"Maslinovo ulje",g:10}]},
-    {name:"Goveđi ražnjić sa brokolijem", items:[{n:"Goveđe mleveno meso (80/20)",g:180},{n:"Brokoli",g:120},{n:"Puter",g:10}]},
-    {name:"Punjene pečurke sa sirom", items:[{n:"Pečurke (šampinjoni)",g:150},{n:"Čedar sir",g:50},{n:"Maslinovo ulje",g:5}]},
-    {name:"Sardine sa zelenom salatom", items:[{n:"Sardine",g:100},{n:"Zelena salata",g:50},{n:"Maslinovo ulje",g:10}]},
-    {name:"Laka piletinja čorba", items:[{n:"Piletina, belo meso",g:100},{n:"Spanać, sirov",g:50},{n:"Pavlaka za kuvanje 36%",g:50}]},
+    {name:"Sardine i krastavac salata", items:[{n:"Sardine",g:100},{n:"Krastavac",g:80},{n:"Maslinovo ulje",g:10}]},
+    {name:"Musaka", items:[{n:"Musaka (krompir, meso)",g:300}]},
+    {name:"Sarma", items:[{n:"Sarma (kupus, meso, pirinač)",g:350}]},
+    {name:"Kajgana sa šunkom", items:[{n:"Kajgana",g:150},{n:"Šunka (nemasna)",g:50}]},
+    {name:"Riblja čorba", items:[{n:"Riblja čorba",g:300}]},
+    {name:"Laka piletinja čorba", items:[{n:"Piletina, belo meso",g:100},{n:"Kupus",g:50},{n:"Pavlaka za kuvanje 36%",g:50}]},
   ]
 };
 
