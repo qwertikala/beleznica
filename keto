@@ -1,1 +1,638 @@
 
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Keto Dnevnik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #1B2016;
+    --bg-card: #242B1E;
+    --bg-card-2: #2C3424;
+    --line: #3A4530;
+    --ivory: #F1EEE2;
+    --muted: #93997F;
+    --yolk: #E8A93B;
+    --avocado: #86A050;
+    --alert: #C1502E;
+    --font-display: 'Fraunces', serif;
+    --font-body: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0;
+    background: var(--bg);
+    color: var(--ivory);
+    font-family: var(--font-body);
+    -webkit-tap-highlight-color: transparent;
+  }
+  body{ min-height:100vh; padding: 20px 16px 60px; }
+  .wrap{ max-width: 480px; margin: 0 auto; }
+
+  header{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 20px; }
+  h1{ font-family: var(--font-display); font-weight: 600; font-size: 26px; letter-spacing: -0.01em; margin: 0; }
+  h1 span{ color: var(--yolk); font-style: italic; font-weight: 400; }
+  .date{ font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .gear{ background:none; border:none; color: var(--muted); cursor:pointer; font-size: 18px; padding: 4px 8px; line-height:1; }
+  .gear:hover{ color: var(--ivory); }
+
+  .dial-card{ background: var(--bg-card); border: 1px solid var(--line); border-radius: 20px; padding: 24px; display:flex; align-items:center; gap: 22px; margin-bottom: 16px; }
+  .dial-svg{ flex-shrink:0; }
+  .dial-num{ font-family: var(--font-mono); font-weight:600; font-size: 30px; fill: var(--ivory); }
+  .dial-label{ font-family: var(--font-mono); font-size: 9px; fill: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .macro-list{ flex:1; display:flex; flex-direction:column; gap:10px; }
+  .macro-row{ display:flex; justify-content:space-between; align-items:baseline; }
+  .macro-name{ font-size: 13px; color: var(--muted); }
+  .macro-val{ font-family: var(--font-mono); font-size: 15px; font-weight:600; }
+
+  .settings-panel{ background: var(--bg-card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 16px; display:none; gap: 10px; flex-direction: column; }
+  .settings-panel.open{ display:flex; }
+  .settings-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .settings-row label{ font-size: 13px; color: var(--muted); }
+  .settings-row input{ width: 80px; text-align:right; background: var(--bg-card-2); border:1px solid var(--line); border-radius:8px; color: var(--ivory); font-family: var(--font-mono); font-size:14px; padding: 6px 8px; }
+
+  .section-title{ font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin: 22px 0 10px; }
+
+  .search-box{ position: relative; margin-bottom: 10px; }
+  .search-box input{ width:100%; background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; color: var(--ivory); font-family: var(--font-body); font-size: 16px; padding: 14px 16px; outline: none; }
+  .search-box input:focus{ border-color: var(--avocado); }
+  .search-box input::placeholder{ color: var(--muted); }
+
+  .results{ display:flex; flex-direction:column; gap:6px; margin-bottom: 10px; }
+  .result-item{ background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+  .result-item:active{ background: var(--bg-card-2); }
+  .result-name{ font-size: 14px; }
+  .result-macro{ font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .add-custom{ text-align:center; font-size: 13px; color: var(--avocado); padding: 10px; cursor:pointer; border: 1px dashed var(--line); border-radius: 12px; }
+
+  .selected-card{ background: var(--bg-card-2); border: 1px solid var(--avocado); border-radius: 14px; padding: 14px; margin-bottom: 16px; display:none; flex-direction: column; gap: 10px; }
+  .selected-card.open{ display:flex; }
+  .selected-top{ display:flex; justify-content:space-between; align-items:center; }
+  .selected-name{ font-size: 15px; font-weight: 500; }
+  .selected-close{ background:none; border:none; color:var(--muted); font-size:16px; cursor:pointer; }
+  .gram-row{ display:flex; gap:8px; align-items:center; }
+  .gram-row input{ flex:1; background: var(--bg-card); border:1px solid var(--line); border-radius:10px; color: var(--ivory); font-family: var(--font-mono); font-size:16px; padding: 10px 12px; text-align:center; }
+  .btn-add{ background: var(--yolk); border:none; border-radius:10px; color:#1B2016; font-family: var(--font-body); font-weight:600; font-size:14px; padding: 10px 18px; cursor:pointer; }
+  .btn-add:active{ opacity:0.85; }
+  .preview{ font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align:center; }
+
+  .custom-form{ background: var(--bg-card-2); border: 1px solid var(--yolk); border-radius: 14px; padding: 14px; margin-bottom: 16px; display:none; flex-direction: column; gap: 10px; }
+  .custom-form.open{ display:flex; }
+  .custom-form input{ background: var(--bg-card); border:1px solid var(--line); border-radius:10px; color: var(--ivory); font-family: var(--font-body); font-size:14px; padding: 10px 12px; }
+  .custom-grid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; }
+  .custom-grid label{ font-size:10px; color:var(--muted); font-family: var(--font-mono); display:block; margin-bottom:4px; }
+
+  /* Meal tabs */
+  .meal-tabs{ display:flex; gap: 8px; margin-bottom: 12px; }
+  .meal-tab{ flex:1; background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align:center; font-size: 13px; color: var(--muted); cursor:pointer; }
+  .meal-tab.active{ background: var(--bg-card-2); border-color: var(--avocado); color: var(--ivory); font-weight:600; }
+  .meal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .meal-btn{ background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 10px; text-align:left; font-size: 13px; color: var(--ivory); cursor:pointer; line-height:1.3; }
+  .meal-btn:active{ background: var(--bg-card-2); }
+  .meal-btn .mb-carbs{ display:block; margin-top:4px; font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+
+  .meal-detail{ background: var(--bg-card-2); border: 1px solid var(--yolk); border-radius: 14px; padding: 14px; margin-bottom: 16px; display:none; flex-direction: column; gap: 10px; }
+  .meal-detail.open{ display:flex; }
+  .meal-detail-top{ display:flex; justify-content:space-between; align-items:center; }
+  .meal-detail-name{ font-size: 15px; font-weight: 600; }
+  .meal-ing-list{ display:flex; flex-direction:column; gap:4px; }
+  .meal-ing-row{ display:flex; justify-content:space-between; font-size: 12px; color: var(--muted); }
+  .meal-totals{ font-family: var(--font-mono); font-size: 12px; color: var(--ivory); border-top: 1px solid var(--line); padding-top: 8px; }
+
+  .log-item{ display:flex; justify-content:space-between; align-items:center; padding: 12px 14px; background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; }
+  .log-left{ display:flex; flex-direction:column; gap:2px; }
+  .log-name{ font-size: 14px; }
+  .log-grams{ font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .log-right{ display:flex; align-items:center; gap: 10px; }
+  .log-carbs{ font-family: var(--font-mono); font-size: 14px; font-weight:600; color: var(--yolk); }
+  .log-remove{ background:none; border:none; color: var(--muted); font-size: 16px; cursor:pointer; padding:2px 6px; }
+  .log-remove:hover{ color: var(--alert); }
+  .empty-log{ text-align:center; color: var(--muted); font-size: 13px; padding: 24px 0; }
+
+  .status-msg{ text-align:center; font-size:12px; color:var(--muted); margin-top: 10px; min-height:16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>keto <span>dnevnik</span></h1>
+      <div class="date" id="dateLabel">—</div>
+    </div>
+    <button class="gear" id="gearBtn" title="Podešavanja">⚙</button>
+  </header>
+
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-row">
+      <label>Dnevni cilj neto UH (g)</label>
+      <input type="number" id="goalInput" value="25" min="5" max="150">
+    </div>
+    <div class="settings-row">
+      <button class="btn-add" id="saveGoalBtn" style="width:100%;">Sačuvaj</button>
+    </div>
+  </div>
+
+  <div class="dial-card">
+    <svg class="dial-svg" width="110" height="110" viewBox="0 0 110 110">
+      <circle cx="55" cy="55" r="46" fill="none" stroke="#3A4530" stroke-width="10"/>
+      <circle id="dialArc" cx="55" cy="55" r="46" fill="none" stroke="#86A050" stroke-width="10"
+        stroke-linecap="round" transform="rotate(-90 55 55)" stroke-dasharray="289" stroke-dashoffset="289"/>
+      <text x="55" y="52" text-anchor="middle" class="dial-num" id="dialNum">0</text>
+      <text x="55" y="68" text-anchor="middle" class="dial-label" id="dialLabel">od 25g UH</text>
+    </svg>
+    <div class="macro-list">
+      <div class="macro-row"><span class="macro-name">proteini</span><span class="macro-val" id="totalProtein">0 g</span></div>
+      <div class="macro-row"><span class="macro-name">masti</span><span class="macro-val" id="totalFat">0 g</span></div>
+      <div class="macro-row"><span class="macro-name">kalorije</span><span class="macro-val" id="totalCal">0 kcal</span></div>
+    </div>
+  </div>
+
+  <div class="section-title">Pretraga namirnica</div>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Šta si pojeo/la? npr. losos, avokado...">
+  </div>
+  <div class="results" id="resultsBox"></div>
+
+  <div class="selected-card" id="selectedCard">
+    <div class="selected-top">
+      <div class="selected-name" id="selectedName"></div>
+      <button class="selected-close" id="closeSelected">✕</button>
+    </div>
+    <div class="gram-row">
+      <input type="number" id="gramsInput" placeholder="grama" inputmode="decimal">
+      <button class="btn-add" id="addEntryBtn">Dodaj</button>
+    </div>
+    <div class="preview" id="previewText"></div>
+  </div>
+
+  <div class="custom-form" id="customForm">
+    <input type="text" id="customName" placeholder="Naziv namirnice">
+    <div class="custom-grid">
+      <div><label>UH /100g</label><input type="number" id="customCarbs" step="0.1"></div>
+      <div><label>Prot /100g</label><input type="number" id="customProtein" step="0.1"></div>
+      <div><label>Masti /100g</label><input type="number" id="customFat" step="0.1"></div>
+    </div>
+    <button class="btn-add" id="saveCustomBtn">Sačuvaj namirnicu</button>
+  </div>
+
+  <div class="section-title">Predlozi obroka</div>
+  <div class="meal-tabs" id="mealTabs">
+    <div class="meal-tab active" data-cat="breakfast">Doručak</div>
+    <div class="meal-tab" data-cat="lunch">Ručak</div>
+    <div class="meal-tab" data-cat="dinner">Večera</div>
+  </div>
+  <div class="meal-grid" id="mealGrid"></div>
+
+  <div class="meal-detail" id="mealDetail">
+    <div class="meal-detail-top">
+      <div class="meal-detail-name" id="mealDetailName"></div>
+      <button class="selected-close" id="closeMealDetail">✕</button>
+    </div>
+    <div class="meal-ing-list" id="mealIngList"></div>
+    <div class="meal-totals" id="mealTotals"></div>
+    <button class="btn-add" id="addMealBtn">Dodaj ceo obrok u dnevnik</button>
+  </div>
+
+  <div class="section-title">Danas pojedeno</div>
+  <div id="logList"></div>
+
+  <div class="status-msg" id="statusMsg"></div>
+
+</div>
+
+<script>
+// =========================================================================
+// KETO DNEVNIK — samostalna stranica, čuva podatke lokalno u pretraživaču
+// (localStorage). Radi offline, bez servera. Slobodno menjaj FOOD_DB i
+// MEALS ispod da dodaš svoje namirnice i obroke.
+// =========================================================================
+
+// ---------- Food database (per 100g): c = neto UH, p = proteini, f = masti ----------
+const FOOD_DB = [
+  {n:"Piletina, belo meso", c:0, p:31, f:3.6},
+  {n:"Piletina, bataci sa kožom", c:0, p:24, f:14},
+  {n:"Ćureći file", c:0, p:29, f:1},
+  {n:"Goveđe mleveno meso (80/20)", c:0, p:17, f:20},
+  {n:"Svinjski but", c:0, p:27, f:14},
+  {n:"Slanina", c:1.4, p:37, f:42},
+  {n:"Šunka (nemasna)", c:1.5, p:20, f:5},
+  {n:"Losos", c:0, p:20, f:13},
+  {n:"Tuna u vodi", c:0, p:26, f:1},
+  {n:"Sardine", c:0, p:25, f:11},
+  {n:"Škampi / kozice", c:0.2, p:24, f:0.3},
+  {n:"Jaje, celo", c:1.1, p:13, f:11},
+  {n:"Grčki jogurt (pun mm)", c:3.6, p:10, f:5},
+  {n:"Kefir", c:4.5, p:3.3, f:3.3},
+  {n:"Feta sir", c:4, p:14, f:21},
+  {n:"Čedar sir", c:1.3, p:25, f:33},
+  {n:"Puter", c:0.1, p:0.9, f:81},
+  {n:"Pavlaka za kuvanje 36%", c:2.8, p:2.1, f:36},
+  {n:"Mocarela", c:2.2, p:22, f:22},
+  {n:"Spanać, sirov", c:1.4, p:2.9, f:0.4},
+  {n:"Brokoli", c:4, p:2.8, f:0.4},
+  {n:"Karfiol", c:3, p:1.9, f:0.3},
+  {n:"Kupus", c:3.3, p:1.3, f:0.1},
+  {n:"Tikvice", c:2.1, p:1.2, f:0.3},
+  {n:"Paprika, crvena", c:3, p:1, f:0.3},
+  {n:"Krastavac", c:2.2, p:0.7, f:0.1},
+  {n:"Paradajz", c:2.7, p:0.9, f:0.2},
+  {n:"Avokado", c:1.8, p:2, f:15},
+  {n:"Crni luk", c:7.6, p:1.1, f:0.1},
+  {n:"Beli luk", c:30.9, p:6.4, f:0.5},
+  {n:"Pečurke (šampinjoni)", c:2.3, p:3.1, f:0.3},
+  {n:"Zelena salata", c:1, p:1.4, f:0.2},
+  {n:"Jagode", c:5.5, p:0.7, f:0.3},
+  {n:"Maline", c:5.4, p:1.2, f:0.6},
+  {n:"Kupine", c:4.3, p:1.4, f:0.5},
+  {n:"Limun", c:6, p:1.1, f:0.3},
+  {n:"Bademi", c:9, p:21, f:50},
+  {n:"Makadamija oraščići", c:4, p:8, f:76},
+  {n:"Orasi", c:7, p:15, f:65},
+  {n:"Chia semenke", c:2, p:17, f:31},
+  {n:"Laneno seme", c:2, p:18, f:42},
+  {n:"Maslinovo ulje", c:0, p:0, f:100},
+  {n:"Kokosovo ulje", c:0, p:0, f:100},
+  {n:"MCT ulje", c:0, p:0, f:100},
+  {n:"Bademovo mleko (nezaslađeno)", c:0.6, p:0.6, f:1.2},
+  {n:"Kokosovo mleko (konzerva)", c:2.8, p:2.3, f:24},
+  {n:"Kravlje mleko, punomasno", c:4.8, p:3.4, f:3.6},
+  {n:"Crna kafa", c:0, p:0.1, f:0},
+  {n:"Beli hleb", c:49, p:9, f:3.2},
+  {n:"Pirinač, kuvan", c:28, p:2.7, f:0.3},
+  {n:"Testenina, kuvana", c:25, p:5, f:1.1},
+  {n:"Krompir, kuvan", c:17, p:2, f:0.1},
+  {n:"Banana", c:23, p:1.1, f:0.3},
+  {n:"Jabuka", c:11.4, p:0.3, f:0.2},
+  {n:"Šećer", c:100, p:0, f:0},
+  {n:"Med", c:82, p:0.3, f:0},
+  {n:"Mlečna čokolada", c:59, p:7.6, f:30},
+  {n:"Pasulj, kuvan", c:14, p:8.7, f:0.5},
+  {n:"Sočivo, kuvano", c:17, p:9, f:0.4},
+];
+
+// ---------- Top 10 predloga obroka po kategoriji ----------
+// Svaki obrok je lista sastojaka {n: naziv iz FOOD_DB, g: grama}
+const MEALS = {
+  breakfast: [
+    {name:"Kajgana sa slaninom", items:[{n:"Jaje, celo",g:120},{n:"Slanina",g:30},{n:"Puter",g:5}]},
+    {name:"Avokado i pečena jaja", items:[{n:"Avokado",g:100},{n:"Jaje, celo",g:100},{n:"Feta sir",g:30}]},
+    {name:"Grčki jogurt sa bademima", items:[{n:"Grčki jogurt (pun mm)",g:200},{n:"Bademi",g:20},{n:"Maline",g:50}]},
+    {name:"Omlet sa spanaćem i sirom", items:[{n:"Jaje, celo",g:150},{n:"Spanać, sirov",g:50},{n:"Čedar sir",g:30}]},
+    {name:"Bulletproof kafa i jaja", items:[{n:"Crna kafa",g:250},{n:"Puter",g:15},{n:"MCT ulje",g:10},{n:"Jaje, celo",g:100}]},
+    {name:"Slanina sa pečurkama", items:[{n:"Slanina",g:50},{n:"Pečurke (šampinjoni)",g:100},{n:"Puter",g:10}]},
+    {name:"Chia puding sa malinama", items:[{n:"Chia semenke",g:30},{n:"Kokosovo mleko (konzerva)",g:150},{n:"Maline",g:30}]},
+    {name:"Šunka i sir rolnice", items:[{n:"Šunka (nemasna)",g:80},{n:"Čedar sir",g:40},{n:"Krastavac",g:50}]},
+    {name:"Losos doručak", items:[{n:"Losos",g:80},{n:"Feta sir",g:30},{n:"Krastavac",g:40}]},
+    {name:"Jogurt bowl sa orasima", items:[{n:"Grčki jogurt (pun mm)",g:200},{n:"Orasi",g:20},{n:"Kupine",g:40}]},
+  ],
+  lunch: [
+    {name:"Pileća salata sa avokadom", items:[{n:"Piletina, belo meso",g:150},{n:"Avokado",g:80},{n:"Zelena salata",g:50},{n:"Maslinovo ulje",g:10}]},
+    {name:"Losos sa brokolijem", items:[{n:"Losos",g:150},{n:"Brokoli",g:150},{n:"Puter",g:10}]},
+    {name:"Burger bez peciva", items:[{n:"Goveđe mleveno meso (80/20)",g:180},{n:"Čedar sir",g:30},{n:"Zelena salata",g:30}]},
+    {name:"Piletina i pire od karfiola", items:[{n:"Piletina, bataci sa kožom",g:200},{n:"Karfiol",g:150},{n:"Puter",g:15}]},
+    {name:"Tuna salata", items:[{n:"Tuna u vodi",g:120},{n:"Feta sir",g:30},{n:"Krastavac",g:60},{n:"Maslinovo ulje",g:10}]},
+    {name:"Škampi sa tikvicama", items:[{n:"Škampi / kozice",g:150},{n:"Tikvice",g:150},{n:"Maslinovo ulje",g:10}]},
+    {name:"Svinjski but sa kupusom", items:[{n:"Svinjski but",g:180},{n:"Kupus",g:150},{n:"Puter",g:10}]},
+    {name:"Ćureći file sa pečurkama", items:[{n:"Ćureći file",g:180},{n:"Pečurke (šampinjoni)",g:100},{n:"Maslinovo ulje",g:10}]},
+    {name:"Sardine sa salatom", items:[{n:"Sardine",g:100},{n:"Zelena salata",g:50},{n:"Paradajz",g:60},{n:"Maslinovo ulje",g:10}]},
+    {name:"Šunka sa paprikom i fetom", items:[{n:"Šunka (nemasna)",g:150},{n:"Paprika, crvena",g:80},{n:"Feta sir",g:30}]},
+  ],
+  dinner: [
+    {name:"Piletina sa spanaćem", items:[{n:"Piletina, belo meso",g:150},{n:"Spanać, sirov",g:100},{n:"Puter",g:10}]},
+    {name:"Losos sa avokadom i limunom", items:[{n:"Losos",g:150},{n:"Avokado",g:80},{n:"Limun",g:20}]},
+    {name:"Omlet za veče", items:[{n:"Jaje, celo",g:150},{n:"Feta sir",g:30},{n:"Paradajz",g:50}]},
+    {name:"Tuna i krastavac salata", items:[{n:"Tuna u vodi",g:120},{n:"Krastavac",g:80},{n:"Maslinovo ulje",g:10}]},
+    {name:"Piletina sa karfiolom", items:[{n:"Piletina, bataci sa kožom",g:180},{n:"Karfiol",g:120},{n:"Puter",g:10}]},
+    {name:"Škampi sa belim lukom", items:[{n:"Škampi / kozice",g:150},{n:"Beli luk",g:5},{n:"Maslinovo ulje",g:10}]},
+    {name:"Goveđi ražnjić sa brokolijem", items:[{n:"Goveđe mleveno meso (80/20)",g:180},{n:"Brokoli",g:120},{n:"Puter",g:10}]},
+    {name:"Punjene pečurke sa sirom", items:[{n:"Pečurke (šampinjoni)",g:150},{n:"Čedar sir",g:50},{n:"Maslinovo ulje",g:5}]},
+    {name:"Sardine sa zelenom salatom", items:[{n:"Sardine",g:100},{n:"Zelena salata",g:50},{n:"Maslinovo ulje",g:10}]},
+    {name:"Laka piletinja čorba", items:[{n:"Piletina, belo meso",g:100},{n:"Spanać, sirov",g:50},{n:"Pavlaka za kuvanje 36%",g:50}]},
+  ]
+};
+
+// ---------- State ----------
+let customFoods = [];
+let settings = { goal: 25 };
+let todayEntries = [];
+let selectedFood = null;
+let activeMealCat = "breakfast";
+let selectedMeal = null;
+const CIRC = 2 * Math.PI * 46; // ~289
+
+function todayKey(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `keto:log:${y}-${m}-${day}`;
+}
+function todayLabel(){
+  const d = new Date();
+  return d.toLocaleDateString('sr-RS', { weekday:'long', day:'numeric', month:'long' });
+}
+
+function setStatus(msg, isError){
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg || '';
+  el.style.color = isError ? 'var(--alert)' : 'var(--muted)';
+  if(msg){ setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 2500); }
+}
+
+// ---------- Local storage helpers ----------
+function lsGet(key){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function lsSet(key, value){
+  try{
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  }catch(e){
+    setStatus('Greška pri čuvanju (localStorage nedostupan)', true);
+    return false;
+  }
+}
+
+function loadSettings(){
+  const s = lsGet('keto:settings');
+  if(s){ settings = s; }
+  document.getElementById('goalInput').value = settings.goal;
+}
+function saveSettings(){ lsSet('keto:settings', settings); }
+
+function loadCustomFoods(){
+  const c = lsGet('keto:custom-foods');
+  customFoods = c || [];
+}
+function saveCustomFoods(){ lsSet('keto:custom-foods', customFoods); }
+
+function loadToday(){
+  const t = lsGet(todayKey());
+  todayEntries = t || [];
+}
+function saveToday(){ lsSet(todayKey(), todayEntries); }
+
+// ---------- Lookup ----------
+function allFoods(){ return [...FOOD_DB, ...customFoods]; }
+function findFood(name){ return allFoods().find(f => f.n === name); }
+
+// ---------- Rendering: search ----------
+function renderResults(query){
+  const box = document.getElementById('resultsBox');
+  box.innerHTML = '';
+  if(!query || query.trim().length === 0){ return; }
+  const q = query.toLowerCase().trim();
+  const matches = allFoods().filter(f => f.n.toLowerCase().includes(q)).slice(0, 6);
+  matches.forEach(f=>{
+    const div = document.createElement('div');
+    div.className = 'result-item';
+    div.innerHTML = `<span class="result-name">${f.n}</span><span class="result-macro">${f.c}g UH /100g</span>`;
+    div.addEventListener('click', ()=> selectFood(f));
+    box.appendChild(div);
+  });
+  const addCustom = document.createElement('div');
+  addCustom.className = 'add-custom';
+  addCustom.textContent = matches.length ? '+ Namirnica nije na listi? Dodaj custom' : '+ Nema rezultata — dodaj custom namirnicu';
+  addCustom.addEventListener('click', ()=>{
+    document.getElementById('customForm').classList.add('open');
+    document.getElementById('customName').value = query;
+    document.getElementById('customName').focus();
+  });
+  box.appendChild(addCustom);
+}
+
+function selectFood(f){
+  selectedFood = f;
+  document.getElementById('selectedName').textContent = f.n;
+  document.getElementById('selectedCard').classList.add('open');
+  document.getElementById('gramsInput').value = '';
+  document.getElementById('previewText').textContent = '';
+  document.getElementById('gramsInput').focus();
+}
+
+function updatePreview(){
+  if(!selectedFood) return;
+  const g = parseFloat(document.getElementById('gramsInput').value) || 0;
+  const c = (selectedFood.c * g / 100).toFixed(1);
+  const p = (selectedFood.p * g / 100).toFixed(1);
+  const f = (selectedFood.f * g / 100).toFixed(1);
+  document.getElementById('previewText').textContent = g > 0 ? `≈ ${c}g UH · ${p}g proteina · ${f}g masti` : '';
+}
+
+// ---------- Rendering: meals ----------
+function mealTotals(meal){
+  let c=0,p=0,f=0;
+  meal.items.forEach(it=>{
+    const food = findFood(it.n);
+    if(!food) return;
+    c += food.c * it.g / 100;
+    p += food.p * it.g / 100;
+    f += food.f * it.g / 100;
+  });
+  const cal = c*4 + p*4 + f*9;
+  return {c,p,f,cal};
+}
+
+function renderMealGrid(){
+  const grid = document.getElementById('mealGrid');
+  grid.innerHTML = '';
+  MEALS[activeMealCat].forEach(meal=>{
+    const t = mealTotals(meal);
+    const btn = document.createElement('div');
+    btn.className = 'meal-btn';
+    btn.innerHTML = `${meal.name}<span class="mb-carbs">${t.c.toFixed(1)}g UH · ${t.cal.toFixed(0)} kcal</span>`;
+    btn.addEventListener('click', ()=> selectMeal(meal));
+    grid.appendChild(btn);
+  });
+}
+
+function selectMeal(meal){
+  selectedMeal = meal;
+  document.getElementById('mealDetailName').textContent = meal.name;
+  const list = document.getElementById('mealIngList');
+  list.innerHTML = '';
+  meal.items.forEach(it=>{
+    const row = document.createElement('div');
+    row.className = 'meal-ing-row';
+    row.innerHTML = `<span>${it.n}</span><span>${it.g}g</span>`;
+    list.appendChild(row);
+  });
+  const t = mealTotals(meal);
+  document.getElementById('mealTotals').textContent =
+    `Ukupno: ${t.c.toFixed(1)}g UH · ${t.p.toFixed(1)}g proteina · ${t.f.toFixed(1)}g masti · ${t.cal.toFixed(0)} kcal`;
+  document.getElementById('mealDetail').classList.add('open');
+}
+
+// ---------- Rendering: log ----------
+function renderLog(){
+  const list = document.getElementById('logList');
+  list.innerHTML = '';
+  if(todayEntries.length === 0){
+    list.innerHTML = '<div class="empty-log">Još ništa uneto danas.</div>';
+  } else {
+    todayEntries.slice().reverse().forEach(entry=>{
+      const div = document.createElement('div');
+      div.className = 'log-item';
+      const gramsLabel = entry.type === 'meal' ? `obrok · ${entry.itemCount} sastojka` : `${entry.grams}g`;
+      div.innerHTML = `
+        <div class="log-left">
+          <span class="log-name">${entry.name}</span>
+          <span class="log-grams">${gramsLabel}</span>
+        </div>
+        <div class="log-right">
+          <span class="log-carbs">${entry.carbs.toFixed(1)}g</span>
+          <button class="log-remove" data-id="${entry.id}">✕</button>
+        </div>`;
+      list.appendChild(div);
+    });
+    list.querySelectorAll('.log-remove').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-id');
+        todayEntries = todayEntries.filter(e => String(e.id) !== id);
+        saveToday();
+        renderAll();
+      });
+    });
+  }
+  renderTotals();
+}
+
+function renderTotals(){
+  const totalCarbs = todayEntries.reduce((s,e)=>s+e.carbs,0);
+  const totalProtein = todayEntries.reduce((s,e)=>s+e.protein,0);
+  const totalFat = todayEntries.reduce((s,e)=>s+e.fat,0);
+  const totalCal = todayEntries.reduce((s,e)=>s+e.cal,0);
+
+  document.getElementById('totalProtein').textContent = totalProtein.toFixed(0) + ' g';
+  document.getElementById('totalFat').textContent = totalFat.toFixed(0) + ' g';
+  document.getElementById('totalCal').textContent = totalCal.toFixed(0) + ' kcal';
+
+  const goal = settings.goal || 25;
+  const pct = Math.min(totalCarbs / goal, 1);
+  const arc = document.getElementById('dialArc');
+  arc.setAttribute('stroke-dashoffset', CIRC - pct * CIRC);
+  arc.setAttribute('stroke', totalCarbs > goal ? '#C1502E' : '#86A050');
+
+  document.getElementById('dialNum').textContent = totalCarbs.toFixed(0);
+  document.getElementById('dialLabel').textContent = `od ${goal}g UH`;
+}
+
+function renderAll(){
+  document.getElementById('dateLabel').textContent = todayLabel();
+  renderLog();
+  renderMealGrid();
+}
+
+// ---------- Events: search & custom food ----------
+document.getElementById('searchInput').addEventListener('input', (e)=> renderResults(e.target.value));
+
+document.getElementById('closeSelected').addEventListener('click', ()=>{
+  selectedFood = null;
+  document.getElementById('selectedCard').classList.remove('open');
+});
+
+document.getElementById('gramsInput').addEventListener('input', updatePreview);
+
+document.getElementById('addEntryBtn').addEventListener('click', ()=>{
+  if(!selectedFood){ return; }
+  const g = parseFloat(document.getElementById('gramsInput').value);
+  if(!g || g <= 0){ setStatus('Unesi gramažu', true); return; }
+  const carbs = selectedFood.c * g / 100;
+  const protein = selectedFood.p * g / 100;
+  const fat = selectedFood.f * g / 100;
+  const cal = carbs*4 + protein*4 + fat*9;
+  todayEntries.push({ id: Date.now(), type:'food', name: selectedFood.n, grams: g, carbs, protein, fat, cal });
+  saveToday();
+  selectedFood = null;
+  document.getElementById('selectedCard').classList.remove('open');
+  document.getElementById('searchInput').value = '';
+  document.getElementById('resultsBox').innerHTML = '';
+  setStatus('Dodato ✓');
+  renderAll();
+});
+
+document.getElementById('saveCustomBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('customName').value.trim();
+  const c = parseFloat(document.getElementById('customCarbs').value) || 0;
+  const p = parseFloat(document.getElementById('customProtein').value) || 0;
+  const f = parseFloat(document.getElementById('customFat').value) || 0;
+  if(!name){ setStatus('Unesi naziv namirnice', true); return; }
+  const newFood = { n: name, c, p, f };
+  customFoods.push(newFood);
+  saveCustomFoods();
+  document.getElementById('customForm').classList.remove('open');
+  document.getElementById('customName').value = '';
+  document.getElementById('customCarbs').value = '';
+  document.getElementById('customProtein').value = '';
+  document.getElementById('customFat').value = '';
+  setStatus('Namirnica sačuvana ✓');
+  selectFood(newFood);
+});
+
+// ---------- Events: settings ----------
+document.getElementById('gearBtn').addEventListener('click', ()=>{
+  document.getElementById('settingsPanel').classList.toggle('open');
+});
+
+document.getElementById('saveGoalBtn').addEventListener('click', ()=>{
+  const g = parseFloat(document.getElementById('goalInput').value);
+  if(!g || g <= 0){ setStatus('Unesi validan cilj', true); return; }
+  settings.goal = g;
+  saveSettings();
+  document.getElementById('settingsPanel').classList.remove('open');
+  setStatus('Cilj sačuvan ✓');
+  renderTotals();
+});
+
+// ---------- Events: meals ----------
+document.getElementById('mealTabs').addEventListener('click', (e)=>{
+  const tab = e.target.closest('.meal-tab');
+  if(!tab) return;
+  activeMealCat = tab.getAttribute('data-cat');
+  document.querySelectorAll('.meal-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById('mealDetail').classList.remove('open');
+  renderMealGrid();
+});
+
+document.getElementById('closeMealDetail').addEventListener('click', ()=>{
+  selectedMeal = null;
+  document.getElementById('mealDetail').classList.remove('open');
+});
+
+document.getElementById('addMealBtn').addEventListener('click', ()=>{
+  if(!selectedMeal) return;
+  const t = mealTotals(selectedMeal);
+  todayEntries.push({
+    id: Date.now(),
+    type:'meal',
+    name: selectedMeal.name,
+    itemCount: selectedMeal.items.length,
+    carbs: t.c, protein: t.p, fat: t.f, cal: t.cal
+  });
+  saveToday();
+  selectedMeal = null;
+  document.getElementById('mealDetail').classList.remove('open');
+  setStatus('Obrok dodat ✓');
+  renderAll();
+});
+
+// ---------- Init ----------
+(function init(){
+  loadSettings();
+  loadCustomFoods();
+  loadToday();
+  renderAll();
+})();
+</script>
+</body>
+</html>
+
