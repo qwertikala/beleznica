@@ -159,6 +159,17 @@
   .bz-pay-partial-btn { background: var(--gold); color: #14170F; border: none; font-weight: 600; }
   .bz-debt-del { background: none; border: 1px solid var(--border); color: var(--muted); }
 
+  .bz-recur-row { padding: 10px 4px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .bz-recur-row:last-child { border-bottom: none; }
+  .bz-recur-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .bz-recur-name { font-weight: 600; font-size: 13px; }
+  .bz-recur-meta { color: var(--muted); font-size: 11px; margin-bottom: 8px; }
+  .bz-recur-actions { display: flex; gap: 8px; }
+  .bz-recur-actions button { font-size: 11.5px; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-family: inherit; }
+  .bz-recur-add-btn { background: var(--gold); color: #14170F; border: none; font-weight: 600; }
+  .bz-recur-add-btn:disabled { background: var(--surface2); color: var(--muted); cursor: default; }
+  .bz-recur-del { background: none; border: 1px solid var(--border); color: var(--muted); }
+
   .bz-wishlist-row { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--border); font-size: 13px; }
   .bz-wishlist-row:last-child { border-bottom: none; }
   .bz-wishlist-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; }
@@ -224,6 +235,13 @@
           <button type="button" class="expense active" id="signExpense">Trošak</button>
           <button type="button" class="income" id="signIncome">Prihod</button>
         </div>
+      </div>
+      <div class="bz-form-row" style="margin-top:8px;">
+        <div class="bz-sign">
+          <button type="button" class="expense active" id="currRsdBtn" style="min-width:52px;">RSD</button>
+          <button type="button" class="income" id="currEurBtn" style="min-width:52px;">EUR</button>
+        </div>
+        <span id="eurConvertPreview" style="font-size:11.5px; color:var(--muted); display:none;"></span>
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
         <select class="bz-input" id="manualCategory" style="flex:1;"></select>
@@ -307,6 +325,27 @@
       <div class="bz-hint" style="margin-bottom:8px;">Ukupno stanje po računu/kartici (sve transakcije i prenosi, ne samo ovaj mesec).</div>
       <div id="accountBalanceRows"></div>
     </div>
+  </div>
+
+  <div class="bz-panel">
+    <div class="bz-section-title">🔁 Ponavljajuće transakcije</div>
+    <div class="bz-hint" style="margin-bottom:10px;">Za stavke koje se ponavljaju svakog meseca (pretplate, rate, plata). Ne dodaje se automatski — dugme te podseti kad dođe novi mesec.</div>
+    <form id="recurringForm">
+      <div class="bz-form-row">
+        <input class="bz-input desc" id="recurringDesc" placeholder="Opis (npr. Netflix)" />
+        <input class="bz-input amount" id="recurringAmount" placeholder="Iznos" inputmode="decimal" />
+        <div class="bz-sign">
+          <button type="button" class="expense active" id="recurringDirExpense">Trošak</button>
+          <button type="button" class="income" id="recurringDirIncome">Prihod</button>
+        </div>
+      </div>
+      <div class="bz-form-row" style="margin-top:8px;">
+        <select class="bz-input" id="recurringCategory" style="flex:1;"></select>
+        <select class="bz-input" id="recurringPaymentMethod" style="flex:1;"></select>
+      </div>
+      <button class="bz-btn" type="submit" style="margin-top:12px; width:100%;">Dodaj ponavljajuću stavku</button>
+    </form>
+    <div id="recurringRows" style="margin-top:14px;"></div>
   </div>
 
   <div class="bz-panel">
@@ -583,6 +622,12 @@
   function saveWishlist() {
     localStorage.setItem("bz_wishlist_" + state.activeWorkspace, JSON.stringify(state.wishlist));
   }
+  function loadRecurringFor(id) {
+    try { return JSON.parse(localStorage.getItem("bz_recurring_" + id) || "[]"); } catch (e) { return []; }
+  }
+  function saveRecurring() {
+    localStorage.setItem("bz_recurring_" + state.activeWorkspace, JSON.stringify(state.recurring));
+  }
   function currentWorkspaceObj() {
     return state.workspaces.filter(function (w) { return w.id === state.activeWorkspace; })[0] || { type: "general", preset: "general" };
   }
@@ -598,6 +643,7 @@
       state.catModel = loadCatModel();
       state.debts = loadDebtsFor(id);
       state.wishlist = loadWishlistFor(id);
+      state.recurring = loadRecurringFor(id);
     }
     state.categoryFilter = null;
     state.paymentFilter = null;
@@ -714,6 +760,7 @@
     loans: [],
     debts: [],
     wishlist: [],
+    recurring: [],
     tab: "paste",
     busy: false,
     editingId: null,
@@ -749,6 +796,7 @@
       state.catModel = loadCatModel();
       state.debts = loadDebtsFor(state.activeWorkspace);
       state.wishlist = loadWishlistFor(state.activeWorkspace);
+      state.recurring = loadRecurringFor(state.activeWorkspace);
     }
   })();
 
@@ -811,6 +859,22 @@
       }
     }
     return "Ostalo";
+  }
+
+  function fetchEurToRsdRate() {
+    var today = todayISO();
+    try {
+      var cached = JSON.parse(localStorage.getItem("bz_eur_rate") || "null");
+      if (cached && cached.date === today && cached.rate) return Promise.resolve(cached.rate);
+    } catch (e) {}
+    return fetch("https://api.frankfurter.dev/v2/rate/EUR/RSD").then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).then(function (d) {
+      if (!d || !d.rate) throw new Error("Nema kursa u odgovoru");
+      localStorage.setItem("bz_eur_rate", JSON.stringify({ date: today, rate: d.rate }));
+      return d.rate;
+    });
   }
 
   function loadCatModel() {
@@ -1611,6 +1675,57 @@
     });
   }
 
+  function addRecurringItem(data) {
+    var item = { id: uid(), description: data.description, amount: data.amount, category: data.category, paymentMethod: data.paymentMethod, lastAppliedMonth: null };
+    state.recurring = [item].concat(state.recurring);
+    saveRecurring();
+    render();
+  }
+  function applyRecurring(id) {
+    var item = state.recurring.filter(function (x) { return x.id === id; })[0];
+    if (!item) return;
+    var currentMonth = todayISO().slice(0, 7);
+    if (item.lastAppliedMonth === currentMonth) return;
+    var t = { id: uid(), description: item.description, amount: item.amount, date: todayISO(), category: item.category, paymentMethod: item.paymentMethod };
+    state.transactions = [t].concat(state.transactions);
+    item.lastAppliedMonth = currentMonth;
+    saveTransactions();
+    saveRecurring();
+    render();
+  }
+  function deleteRecurringItem(id) {
+    if (!confirm("Obrisati ovu ponavljajuću stavku? (Već dodate transakcije ostaju.)")) return;
+    state.recurring = state.recurring.filter(function (r) { return r.id !== id; });
+    saveRecurring();
+    render();
+  }
+  function renderRecurring() {
+    var container = document.getElementById("recurringRows");
+    if (state.recurring.length === 0) {
+      container.innerHTML = '<div class="bz-empty">Još nema ponavljajućih stavki.</div>';
+      return;
+    }
+    var currentMonth = todayISO().slice(0, 7);
+    container.innerHTML = state.recurring.map(function (r) {
+      var appliedThisMonth = r.lastAppliedMonth === currentMonth;
+      var color = r.amount >= 0 ? "var(--sage)" : "var(--rust)";
+      return '<div class="bz-recur-row">' +
+        '<div class="bz-recur-top"><span class="bz-recur-name">' + escapeHtml(r.description) + '</span>' +
+        '<span style="color:' + color + '; font-family:Georgia,serif;">' + (r.amount >= 0 ? "+" : "") + fmt(r.amount) + '</span></div>' +
+        '<div class="bz-recur-meta">' + escapeHtml(r.category || "Ostalo") + (r.paymentMethod ? " · " + escapeHtml(r.paymentMethod) : "") + '</div>' +
+        '<div class="bz-recur-actions">' +
+        '<button class="bz-recur-add-btn" data-recuradd="' + r.id + '"' + (appliedThisMonth ? " disabled" : "") + '>' + (appliedThisMonth ? "✓ Dodato za " + monthLabel(currentMonth) : "+ Dodaj za " + monthLabel(currentMonth)) + '</button>' +
+        '<button class="bz-recur-del" data-recurdel="' + r.id + '">Obriši</button>' +
+        '</div></div>';
+    }).join("");
+    Array.prototype.forEach.call(container.querySelectorAll("[data-recuradd]"), function (btn) {
+      btn.addEventListener("click", function () { applyRecurring(btn.getAttribute("data-recuradd")); });
+    });
+    Array.prototype.forEach.call(container.querySelectorAll("[data-recurdel]"), function (btn) {
+      btn.addEventListener("click", function () { deleteRecurringItem(btn.getAttribute("data-recurdel")); });
+    });
+  }
+
   function renderLoansView() {
     var monthly = 0, remainingTotal = 0;
     state.loans.forEach(function (l) {
@@ -1785,6 +1900,17 @@
     renderStanQuickPanel();
     renderDebts();
     renderWishlist();
+    renderRecurring();
+    (function () {
+      var catSel = document.getElementById("recurringCategory");
+      var prevVal = catSel.value;
+      catSel.innerHTML = categoryNames().map(function (c) { return '<option value="' + c + '">' + escapeHtml(c) + '</option>'; }).join("");
+      if (categoryNames().indexOf(prevVal) !== -1) catSel.value = prevVal;
+      var paySel = document.getElementById("recurringPaymentMethod");
+      var prevPay = paySel.value;
+      paySel.innerHTML = state.paymentMethods.map(function (m) { return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>'; }).join("");
+      if (state.paymentMethods.indexOf(prevPay) !== -1) paySel.value = prevPay;
+    })();
 
     document.getElementById("monthLabel").textContent = monthLabel(state.selectedMonth);
     var currentMonth = todayISO().slice(0, 7);
@@ -2141,6 +2267,41 @@
     document.getElementById("signExpense").classList.remove("active");
   });
 
+  var currencyMode = "RSD";
+  var lastEurRate = null;
+  function updateEurPreview() {
+    var preview = document.getElementById("eurConvertPreview");
+    if (currencyMode !== "EUR") { preview.style.display = "none"; return; }
+    var raw = document.getElementById("manualAmount").value;
+    var val = parseFloat(String(raw).replace(",", "."));
+    if (isNaN(val) || val <= 0) { preview.style.display = "none"; return; }
+    preview.style.display = "inline";
+    if (lastEurRate) {
+      preview.textContent = "≈ " + fmt(val * lastEurRate) + " (kurs " + lastEurRate.toFixed(2) + ")";
+    } else {
+      preview.textContent = "Učitavam kurs...";
+      fetchEurToRsdRate().then(function (rate) {
+        lastEurRate = rate;
+        updateEurPreview();
+      }).catch(function () {
+        preview.textContent = "Kurs nije dostupan — proveri internet konekciju.";
+      });
+    }
+  }
+  document.getElementById("currRsdBtn").addEventListener("click", function () {
+    currencyMode = "RSD";
+    document.getElementById("currRsdBtn").classList.add("active");
+    document.getElementById("currEurBtn").classList.remove("active");
+    updateEurPreview();
+  });
+  document.getElementById("currEurBtn").addEventListener("click", function () {
+    currencyMode = "EUR";
+    document.getElementById("currEurBtn").classList.add("active");
+    document.getElementById("currRsdBtn").classList.remove("active");
+    updateEurPreview();
+  });
+  document.getElementById("manualAmount").addEventListener("input", updateEurPreview);
+
   document.getElementById("manualForm").addEventListener("submit", function (e) {
     e.preventDefault();
     var descEl = document.getElementById("manualDesc");
@@ -2149,6 +2310,21 @@
     var payEl = document.getElementById("manualPaymentMethod");
     var val = parseFloat(String(amountEl.value).replace(",", "."));
     if (!descEl.value.trim() || isNaN(val) || val === 0) { showError("Unesi opis i validan iznos."); return; }
+    if (currencyMode === "EUR") {
+      if (!lastEurRate) { showError("Sačekaj da se učita kurs EUR → RSD, pa pokušaj ponovo."); return; }
+      var eurVal = val;
+      val = val * lastEurRate;
+      var chosenCategoryEur = catEl.value || null;
+      var tEur = { id: uid(), description: descEl.value.trim() + " (" + eurVal.toFixed(2) + " EUR × " + lastEurRate.toFixed(2) + ")", amount: signMode === "expense" ? -Math.abs(val) : Math.abs(val), date: todayISO(), category: chosenCategoryEur, paymentMethod: payEl.value || null };
+      state.transactions = [tEur].concat(state.transactions);
+      saveTransactions();
+      if (chosenCategoryEur) trainCategory(tEur.description, chosenCategoryEur);
+      descEl.value = ""; amountEl.value = ""; state.manualCategoryTouched = false;
+      document.getElementById("eurConvertPreview").style.display = "none";
+      render();
+      if (!chosenCategoryEur) runCategorization([tEur]);
+      return;
+    }
     var chosenCategory = catEl.value || null;
     var t = { id: uid(), description: descEl.value.trim(), amount: signMode === "expense" ? -Math.abs(val) : Math.abs(val), date: todayISO(), category: chosenCategory, paymentMethod: payEl.value || null };
     state.transactions = [t].concat(state.transactions);
@@ -2401,6 +2577,34 @@
     if (!input.value.trim()) return;
     addWishlistItem(input.value.trim());
     input.value = "";
+  });
+
+  var recurringDirMode = "expense";
+  document.getElementById("recurringDirExpense").addEventListener("click", function () {
+    recurringDirMode = "expense";
+    document.getElementById("recurringDirExpense").classList.add("active");
+    document.getElementById("recurringDirIncome").classList.remove("active");
+  });
+  document.getElementById("recurringDirIncome").addEventListener("click", function () {
+    recurringDirMode = "income";
+    document.getElementById("recurringDirIncome").classList.add("active");
+    document.getElementById("recurringDirExpense").classList.remove("active");
+  });
+  document.getElementById("recurringForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var descEl = document.getElementById("recurringDesc");
+    var amountEl = document.getElementById("recurringAmount");
+    var catEl = document.getElementById("recurringCategory");
+    var payEl = document.getElementById("recurringPaymentMethod");
+    var val = parseFloat(String(amountEl.value).replace(",", "."));
+    if (!descEl.value.trim() || isNaN(val) || val <= 0) { alert("Unesi opis i validan iznos."); return; }
+    addRecurringItem({
+      description: descEl.value.trim(),
+      amount: recurringDirMode === "expense" ? -Math.abs(val) : Math.abs(val),
+      category: catEl.value || "Ostalo",
+      paymentMethod: payEl.value || null
+    });
+    descEl.value = ""; amountEl.value = "";
   });
   document.getElementById("qrCancelBtn").addEventListener("click", closeQrModal);
   document.getElementById("qrAddBtn").addEventListener("click", function () {
