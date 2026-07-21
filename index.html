@@ -229,18 +229,20 @@
     <div class="bz-section-title">Dodaj transakciju</div>
     <form id="manualForm">
       <div class="bz-form-row">
-        <input class="bz-input desc" id="manualDesc" placeholder="Opis" />
+        <input class="bz-input desc" id="manualDesc" placeholder="Opis" style="flex:1;" />
         <input class="bz-input amount" id="manualAmount" placeholder="Iznos" inputmode="decimal" />
+      </div>
+      <div class="bz-form-row" style="margin-top:8px;">
         <div class="bz-sign">
           <button type="button" class="expense active" id="signExpense">Trošak</button>
           <button type="button" class="income" id="signIncome">Prihod</button>
         </div>
-      </div>
-      <div class="bz-form-row" style="margin-top:8px;">
         <div class="bz-sign">
           <button type="button" class="expense active" id="currRsdBtn" style="min-width:52px;">RSD</button>
           <button type="button" class="income" id="currEurBtn" style="min-width:52px;">EUR</button>
         </div>
+      </div>
+      <div class="bz-form-row" style="margin-top:4px;">
         <span id="eurConvertPreview" style="font-size:11.5px; color:var(--muted); display:none;"></span>
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
@@ -332,12 +334,15 @@
     <div class="bz-hint" style="margin-bottom:10px;">Za stavke koje se ponavljaju svakog meseca (pretplate, rate, plata). Ne dodaje se automatski — dugme te podseti kad dođe novi mesec.</div>
     <form id="recurringForm">
       <div class="bz-form-row">
-        <input class="bz-input desc" id="recurringDesc" placeholder="Opis (npr. Netflix)" />
+        <input class="bz-input desc" id="recurringDesc" placeholder="Opis (npr. Netflix)" style="flex:1;" />
         <input class="bz-input amount" id="recurringAmount" placeholder="Iznos" inputmode="decimal" />
+      </div>
+      <div class="bz-form-row" style="margin-top:8px;">
         <div class="bz-sign">
           <button type="button" class="expense active" id="recurringDirExpense">Trošak</button>
           <button type="button" class="income" id="recurringDirIncome">Prihod</button>
         </div>
+        <input class="bz-input" id="recurringDay" type="number" min="1" max="31" placeholder="Dan (1-31)" style="width:110px;" />
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
         <select class="bz-input" id="recurringCategory" style="flex:1;"></select>
@@ -1676,17 +1681,26 @@
   }
 
   function addRecurringItem(data) {
-    var item = { id: uid(), description: data.description, amount: data.amount, category: data.category, paymentMethod: data.paymentMethod, lastAppliedMonth: null };
+    var item = { id: uid(), description: data.description, amount: data.amount, category: data.category, paymentMethod: data.paymentMethod, dayOfMonth: data.dayOfMonth || null, lastAppliedMonth: null };
     state.recurring = [item].concat(state.recurring);
     saveRecurring();
     render();
+  }
+  function dateForRecurring(item) {
+    var currentMonth = todayISO().slice(0, 7);
+    if (!item.dayOfMonth) return todayISO();
+    var parts = currentMonth.split("-");
+    var y = parseInt(parts[0], 10), mo = parseInt(parts[1], 10);
+    var daysInMonth = new Date(y, mo, 0).getDate();
+    var day = Math.min(item.dayOfMonth, daysInMonth);
+    return currentMonth + "-" + String(day).padStart(2, "0");
   }
   function applyRecurring(id) {
     var item = state.recurring.filter(function (x) { return x.id === id; })[0];
     if (!item) return;
     var currentMonth = todayISO().slice(0, 7);
     if (item.lastAppliedMonth === currentMonth) return;
-    var t = { id: uid(), description: item.description, amount: item.amount, date: todayISO(), category: item.category, paymentMethod: item.paymentMethod };
+    var t = { id: uid(), description: item.description, amount: item.amount, date: dateForRecurring(item), category: item.category, paymentMethod: item.paymentMethod };
     state.transactions = [t].concat(state.transactions);
     item.lastAppliedMonth = currentMonth;
     saveTransactions();
@@ -1712,7 +1726,7 @@
       return '<div class="bz-recur-row">' +
         '<div class="bz-recur-top"><span class="bz-recur-name">' + escapeHtml(r.description) + '</span>' +
         '<span style="color:' + color + '; font-family:Georgia,serif;">' + (r.amount >= 0 ? "+" : "") + fmt(r.amount) + '</span></div>' +
-        '<div class="bz-recur-meta">' + escapeHtml(r.category || "Ostalo") + (r.paymentMethod ? " · " + escapeHtml(r.paymentMethod) : "") + '</div>' +
+        '<div class="bz-recur-meta">' + escapeHtml(r.category || "Ostalo") + (r.paymentMethod ? " · " + escapeHtml(r.paymentMethod) : "") + (r.dayOfMonth ? " · svakog " + r.dayOfMonth + ". u mesecu" : "") + '</div>' +
         '<div class="bz-recur-actions">' +
         '<button class="bz-recur-add-btn" data-recuradd="' + r.id + '"' + (appliedThisMonth ? " disabled" : "") + '>' + (appliedThisMonth ? "✓ Dodato za " + monthLabel(currentMonth) : "+ Dodaj za " + monthLabel(currentMonth)) + '</button>' +
         '<button class="bz-recur-del" data-recurdel="' + r.id + '">Obriši</button>' +
@@ -2596,15 +2610,19 @@
     var amountEl = document.getElementById("recurringAmount");
     var catEl = document.getElementById("recurringCategory");
     var payEl = document.getElementById("recurringPaymentMethod");
+    var dayEl = document.getElementById("recurringDay");
     var val = parseFloat(String(amountEl.value).replace(",", "."));
     if (!descEl.value.trim() || isNaN(val) || val <= 0) { alert("Unesi opis i validan iznos."); return; }
+    var dayVal = parseInt(dayEl.value, 10);
+    if (dayEl.value && (isNaN(dayVal) || dayVal < 1 || dayVal > 31)) { alert("Dan u mesecu mora biti između 1 i 31."); return; }
     addRecurringItem({
       description: descEl.value.trim(),
       amount: recurringDirMode === "expense" ? -Math.abs(val) : Math.abs(val),
       category: catEl.value || "Ostalo",
-      paymentMethod: payEl.value || null
+      paymentMethod: payEl.value || null,
+      dayOfMonth: dayEl.value ? dayVal : null
     });
-    descEl.value = ""; amountEl.value = "";
+    descEl.value = ""; amountEl.value = ""; dayEl.value = "";
   });
   document.getElementById("qrCancelBtn").addEventListener("click", closeQrModal);
   document.getElementById("qrAddBtn").addEventListener("click", function () {
