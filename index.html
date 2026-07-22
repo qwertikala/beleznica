@@ -214,7 +214,7 @@
   </div>
   <div class="bz-summary">
     <div class="bz-card balance" id="balanceCard" style="cursor:pointer;"><div class="bz-card-label">Stanje 🔒</div><div class="bz-card-value" id="valBalance">••••••</div></div>
-    <div class="bz-card income"><div class="bz-card-label">Prihodi</div><div class="bz-card-value" id="valIncome">0 RSD</div></div>
+    <div class="bz-card income" id="incomeCard" style="cursor:pointer;"><div class="bz-card-label">Prihodi 🔒</div><div class="bz-card-value" id="valIncome">••••••</div></div>
     <div class="bz-card expense"><div class="bz-card-label">Rashodi</div><div class="bz-card-value" id="valExpense">0 RSD</div></div>
   </div>
 
@@ -364,6 +364,16 @@
   </div>
 
   <div class="bz-panel">
+    <div class="bz-section-title">Računi i kartice</div>
+    <div class="bz-hint" style="margin-bottom:8px;">Ukloni × ako ugasiš račun/karticu — ne briše postojeće transakcije, samo je uklanja iz izbora za nove.</div>
+    <div id="paymentMethodChips"></div>
+    <div class="bz-form-row" style="margin-top:6px;">
+      <input class="bz-input desc" id="newPaymentMethodInput" placeholder="Novi račun/kartica" />
+      <button class="bz-btn" style="margin-top:0" id="addPaymentMethodBtn2">Dodaj</button>
+    </div>
+  </div>
+
+  <div class="bz-panel">
     <div class="bz-section-title">💸 Zaduženja</div>
     <div class="bz-hint" style="margin-bottom:10px;">Ko duguje tebi, i kome duguješ ti. Ostaje otvoreno dok se ne otplati u potpunosti — možeš uplaćivati deo po deo.</div>
     <div class="bz-summary" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:16px;">
@@ -466,6 +476,14 @@
   </div>
 
 </div></div>
+
+<div id="backupReminder" style="display:none; position:fixed; bottom:14px; left:14px; right:14px; z-index:120; background:var(--surface); border:1px solid var(--gold); border-radius:6px; padding:12px 14px; max-width:460px; margin:0 auto;">
+  <div style="font-size:13px; margin-bottom:8px;">💾 Kraj meseca je — vreme za backup podataka?</div>
+  <div style="display:flex; gap:8px;">
+    <button class="bz-btn" id="backupReminderDoBtn" style="margin-top:0; flex:1;">Preuzmi backup sada</button>
+    <button class="bz-btn ghost" id="backupReminderLaterBtn" style="margin-top:0; flex:1;">Podseti kasnije</button>
+  </div>
+</div>
 
 <div id="lightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:100; align-items:center; justify-content:center; padding:20px;">
   <img id="lightboxImg" style="max-width:100%; max-height:90%; border-radius:4px;" />
@@ -657,6 +675,7 @@
     state.visibleCount = 15;
     state.selectedMonth = todayISO().slice(0, 7);
     state.balanceRevealed = false;
+    state.incomeRevealed = false;
     state.currentView = "normal";
     var s = document.getElementById("searchInput"); if (s) s.value = "";
     render();
@@ -735,6 +754,27 @@
     }
     return name;
   }
+  function deletePaymentMethod(name) {
+    if (name === BORROWED_INCOME_METHOD) { alert("Ovaj račun koristi sistem za praćenje pozajmica i ne može se obrisati dok postoje aktivna zaduženja."); return; }
+    if (!confirm("Ukloniti „" + name + "” iz liste računa? Postojeće transakcije zadržavaju ovaj naziv, samo se uklanja iz izbora za nove.")) return;
+    state.paymentMethods = state.paymentMethods.filter(function (m) { return m !== name; });
+    savePaymentMethods();
+    render();
+  }
+  function renderPaymentMethodChips() {
+    var container = document.getElementById("paymentMethodChips");
+    if (!container) return;
+    container.innerHTML = state.paymentMethods.map(function (m) {
+      var protectedMethod = m === BORROWED_INCOME_METHOD;
+      return '<span class="bz-catchip" style="background:rgba(201,162,39,0.15); color:var(--gold);">' +
+        escapeHtml(m) +
+        (protectedMethod ? '' : ' <button data-delpay="' + escapeHtml(m) + '" title="Ukloni">×</button>') +
+        '</span>';
+    }).join("");
+    Array.prototype.forEach.call(container.querySelectorAll("[data-delpay]"), function (btn) {
+      btn.addEventListener("click", function () { deletePaymentMethod(btn.getAttribute("data-delpay")); });
+    });
+  }
   function renderPaymentMethodSelect() {
     var sel = document.getElementById("manualPaymentMethod");
     var prevVal = sel.value;
@@ -783,7 +823,8 @@
     accExpanded: false,
     currentView: "normal",
     catModel: {},
-    balanceRevealed: false
+    balanceRevealed: false,
+    incomeRevealed: false
   };
 
   state.paymentMethods = loadPaymentMethods();
@@ -1287,9 +1328,29 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
   }
 
+  function daysInCurrentMonth() {
+    var now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  }
+  function hideBackupReminder() {
+    document.getElementById("backupReminder").style.display = "none";
+  }
+  function checkBackupReminder() {
+    var now = new Date();
+    var currentMonth = todayISO().slice(0, 7);
+    var daysLeft = daysInCurrentMonth() - now.getDate();
+    var lastBackupMonth = localStorage.getItem("bz_last_backup_month");
+    var dismissedMonth = localStorage.getItem("bz_backup_reminder_dismissed_month");
+    if (daysLeft <= 2 && lastBackupMonth !== currentMonth && dismissedMonth !== currentMonth) {
+      document.getElementById("backupReminder").style.display = "block";
+    }
+  }
+
   function exportJson() {
     var backup = collectBackupData();
-    downloadBlob(JSON.stringify(backup, null, 2), "beleznica-backup-" + todayISO() + ".json", "application/json");
+    downloadBlob(JSON.stringify(backup, null, 2), todayISO() + ".json", "application/json");
+    localStorage.setItem("bz_last_backup_month", todayISO().slice(0, 7));
+    hideBackupReminder();
   }
 
   var sheetJsLoadPromise = null;
@@ -1560,10 +1621,20 @@
     saveLoans();
     render();
   }
+  var BORROWED_INCOME_METHOD = "LOŠ PRIHOD";
   function addDebt(person, amount, direction) {
     var item = { id: uid(), person: person, direction: direction, originalAmount: amount, payments: [], createdDate: todayISO() };
     state.debts = [item].concat(state.debts);
     saveDebts();
+    if (direction === "iowe") {
+      if (state.paymentMethods.indexOf(BORROWED_INCOME_METHOD) === -1) {
+        state.paymentMethods.push(BORROWED_INCOME_METHOD);
+        savePaymentMethods();
+      }
+      var t = { id: uid(), description: "Pozajmica od " + person, amount: Math.abs(amount), date: todayISO(), category: "Prihod", paymentMethod: BORROWED_INCOME_METHOD, debtId: item.id };
+      state.transactions = [t].concat(state.transactions);
+      saveTransactions();
+    }
     render();
   }
   function addDebtPayment(id, amount) {
@@ -1910,6 +1981,7 @@
     renderFilterCategorySelect();
     renderFilterPaymentSelect();
     renderPaymentMethodSelect();
+    renderPaymentMethodChips();
     renderTransferSelects();
     renderStanQuickPanel();
     renderDebts();
@@ -1948,7 +2020,7 @@
       }
     });
     document.getElementById("valBalance").textContent = state.balanceRevealed ? ((balance >= 0 ? "" : "-") + fmt(balance)) : "••••••";
-    document.getElementById("valIncome").textContent = fmt(income);
+    document.getElementById("valIncome").textContent = state.incomeRevealed ? fmt(income) : "••••••";
     document.getElementById("valExpense").textContent = fmt(expense);
 
     var accToggleBtn = document.getElementById("accToggleBtn");
@@ -2437,27 +2509,32 @@
     state.visibleCount = 15;
     render();
   });
-  document.getElementById("balanceCard").addEventListener("click", function () {
-    if (state.balanceRevealed) { state.balanceRevealed = false; render(); return; }
+  function requestPinReveal(onSuccess) {
     var savedPin = localStorage.getItem("bz_pin");
     if (!savedPin) {
-      var newPin = prompt("Postavi šifru (4+ cifre) za prikaz stanja:");
+      var newPin = prompt("Postavi šifru (4+ cifre) za prikaz stanja/prihoda:");
       if (!newPin || newPin.trim().length < 4) { if (newPin !== null) alert("Šifra mora imati bar 4 cifre."); return; }
       var confirmPin = prompt("Ponovi šifru radi potvrde:");
       if (newPin.trim() !== confirmPin) { alert("Šifre se ne poklapaju, pokušaj ponovo."); return; }
       localStorage.setItem("bz_pin", newPin.trim());
-      state.balanceRevealed = true;
-      render();
+      onSuccess();
       return;
     }
-    var entered = prompt("Unesi šifru za prikaz stanja:");
+    var entered = prompt("Unesi šifru:");
     if (entered === null) return;
     if (entered.trim() === savedPin) {
-      state.balanceRevealed = true;
-      render();
+      onSuccess();
     } else {
       alert("Pogrešna šifra.");
     }
+  }
+  document.getElementById("balanceCard").addEventListener("click", function () {
+    if (state.balanceRevealed) { state.balanceRevealed = false; render(); return; }
+    requestPinReveal(function () { state.balanceRevealed = true; render(); });
+  });
+  document.getElementById("incomeCard").addEventListener("click", function () {
+    if (state.incomeRevealed) { state.incomeRevealed = false; render(); return; }
+    requestPinReveal(function () { state.incomeRevealed = true; render(); });
   });
   document.getElementById("addPaymentMethodBtn").addEventListener("click", function () {
     var name = prompt("Naziv novog računa/kartice (npr. Banca Intesa tekući, Naxis kartica):");
@@ -2466,6 +2543,14 @@
       renderPaymentMethodSelect();
       document.getElementById("manualPaymentMethod").value = added;
     }
+  });
+  document.getElementById("addPaymentMethodBtn2").addEventListener("click", function () {
+    var input = document.getElementById("newPaymentMethodInput");
+    var added = addPaymentMethod(input.value);
+    if (added) { input.value = ""; render(); }
+  });
+  document.getElementById("newPaymentMethodInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); document.getElementById("addPaymentMethodBtn2").click(); }
   });
   document.getElementById("lightboxClose").addEventListener("click", function () {
     document.getElementById("lightbox").style.display = "none";
@@ -2660,6 +2745,13 @@
   });
 
   render();
+
+  document.getElementById("backupReminderDoBtn").addEventListener("click", exportJson);
+  document.getElementById("backupReminderLaterBtn").addEventListener("click", function () {
+    localStorage.setItem("bz_backup_reminder_dismissed_month", todayISO().slice(0, 7));
+    hideBackupReminder();
+  });
+  checkBackupReminder();
 })();
 </script>
 </body>
