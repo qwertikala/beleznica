@@ -170,6 +170,14 @@
   .bz-recur-add-btn:disabled { background: var(--surface2); color: var(--muted); cursor: default; }
   .bz-recur-del { background: none; border: 1px solid var(--border); color: var(--muted); }
 
+  .bz-budget-row { padding: 9px 2px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .bz-budget-row:last-child { border-bottom: none; }
+  .bz-budget-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .bz-budget-name { font-weight: 600; }
+  .bz-budget-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; padding: 0 4px; }
+  .bz-budget-track { background: var(--surface2); border-radius: 3px; height: 8px; overflow: hidden; }
+  .bz-budget-fill { height: 100%; border-radius: 3px; }
+
   .bz-wishlist-row { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--border); font-size: 13px; }
   .bz-wishlist-row:last-child { border-bottom: none; }
   .bz-wishlist-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; }
@@ -194,7 +202,7 @@
     <span>💾 Backup / Izvoz</span>
   </div>
   <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border); font-size:10px; color:var(--muted); text-align:center;">
-    Verzija: 2026-07-23 v18
+    Verzija: 2026-07-23 v19
   </div>
 </div>
 
@@ -312,21 +320,6 @@
     <div id="loadMoreWrap" style="text-align:center; margin-top:10px;"></div>
   </div>
 
-  <div class="bz-panel" id="payPanel" style="display:none;">
-    <button class="bz-btn ghost" id="payToggleBtn" style="margin-top:0; width:100%;">Prikaži rashode po načinu plaćanja ▾</button>
-    <div id="payRowsWrap" style="display:none; margin-top:12px;">
-      <div id="payRows"></div>
-    </div>
-  </div>
-
-  <div class="bz-panel">
-    <button class="bz-btn ghost" id="accToggleBtn" style="margin-top:0; width:100%;">Prikaži stanje po računima ▾</button>
-    <div id="accountBalanceWrap" style="display:none; margin-top:12px;">
-      <div class="bz-hint" style="margin-bottom:8px;">Ukupno stanje po računu/kartici (sve transakcije i prenosi, ne samo ovaj mesec).</div>
-      <div id="accountBalanceRows"></div>
-    </div>
-  </div>
-
   <div class="bz-panel">
     <div class="bz-section-title">🔁 Ponavljajuće transakcije</div>
     <div class="bz-hint" style="margin-bottom:10px;">Za stavke koje se ponavljaju svakog meseca (pretplate, rate, plata). Ne dodaje se automatski — dugme te podseti kad dođe novi mesec.</div>
@@ -410,6 +403,32 @@
   <div class="bz-panel" id="catPanel" style="display:none;">
     <div class="bz-section-title">Rashodi po kategoriji</div>
     <div id="catRows"></div>
+  </div>
+
+  <div class="bz-panel" id="payPanel" style="display:none;">
+    <button class="bz-btn ghost" id="payToggleBtn" style="margin-top:0; width:100%;">Prikaži rashode po načinu plaćanja ▾</button>
+    <div id="payRowsWrap" style="display:none; margin-top:12px;">
+      <div id="payRows"></div>
+    </div>
+  </div>
+
+  <div class="bz-panel">
+    <button class="bz-btn ghost" id="accToggleBtn" style="margin-top:0; width:100%;">Prikaži stanje po računima ▾</button>
+    <div id="accountBalanceWrap" style="display:none; margin-top:12px;">
+      <div class="bz-hint" style="margin-bottom:8px;">Ukupno stanje po računu/kartici (sve transakcije i prenosi, ne samo ovaj mesec).</div>
+      <div id="accountBalanceRows"></div>
+    </div>
+  </div>
+
+  <div class="bz-panel">
+    <div class="bz-section-title">🎯 Budžetski limiti</div>
+    <div class="bz-hint" style="margin-bottom:10px;">Opciono — postavi mesečni limit za kategorije koje želiš da pratiš. Traka pokazuje koliko si potrošio od limita.</div>
+    <div id="budgetRows" style="margin-bottom:10px;"></div>
+    <div class="bz-form-row">
+      <select class="bz-input" id="budgetCategorySelect" style="flex:1;"></select>
+      <input class="bz-input amount" id="budgetLimitInput" placeholder="Limit RSD" inputmode="decimal" />
+      <button class="bz-btn" style="margin-top:0;" id="budgetAddBtn">Postavi</button>
+    </div>
   </div>
   </div>
 
@@ -654,6 +673,12 @@
   function saveRecurring() {
     localStorage.setItem("bz_recurring_" + state.activeWorkspace, JSON.stringify(state.recurring));
   }
+  function loadBudgetsFor(id) {
+    try { return JSON.parse(localStorage.getItem("bz_budgets_" + id) || "{}"); } catch (e) { return {}; }
+  }
+  function saveBudgets() {
+    localStorage.setItem("bz_budgets_" + state.activeWorkspace, JSON.stringify(state.budgets));
+  }
   function currentWorkspaceObj() {
     return state.workspaces.filter(function (w) { return w.id === state.activeWorkspace; })[0] || { type: "general", preset: "general" };
   }
@@ -670,6 +695,7 @@
       state.debts = loadDebtsFor(id);
       state.wishlist = loadWishlistFor(id);
       state.recurring = loadRecurringFor(id);
+      state.budgets = loadBudgetsFor(id);
     }
     state.categoryFilter = null;
     state.paymentFilter = null;
@@ -809,6 +835,7 @@
     debts: [],
     wishlist: [],
     recurring: [],
+    budgets: {},
     tab: "paste",
     busy: false,
     editingId: null,
@@ -846,6 +873,7 @@
       state.debts = loadDebtsFor(state.activeWorkspace);
       state.wishlist = loadWishlistFor(state.activeWorkspace);
       state.recurring = loadRecurringFor(state.activeWorkspace);
+      state.budgets = loadBudgetsFor(state.activeWorkspace);
     }
   })();
 
@@ -1814,6 +1842,51 @@
     });
   }
 
+  function setBudget(category, limit) {
+    state.budgets[category] = limit;
+    saveBudgets();
+    render();
+  }
+  function deleteBudget(category) {
+    delete state.budgets[category];
+    saveBudgets();
+    render();
+  }
+  function renderBudgets(monthTx) {
+    var container = document.getElementById("budgetRows");
+    var cats = Object.keys(state.budgets);
+    if (cats.length === 0) {
+      container.innerHTML = '<div class="bz-empty">Nema postavljenih limita — opciono ih dodaj ispod.</div>';
+    } else {
+      var spentByCat = {};
+      monthTx.forEach(function (t) {
+        if (t.amount < 0) {
+          var c = t.category || "Ostalo";
+          spentByCat[c] = (spentByCat[c] || 0) + Math.abs(t.amount);
+        }
+      });
+      container.innerHTML = cats.map(function (cat) {
+        var limit = state.budgets[cat];
+        var spent = spentByCat[cat] || 0;
+        var pct = Math.min(100, Math.round((spent / limit) * 100));
+        var over = spent > limit;
+        var barColor = over ? "var(--rust)" : (pct > 80 ? "#D9A23B" : "var(--sage)");
+        return '<div class="bz-budget-row">' +
+          '<div class="bz-budget-top"><span class="bz-budget-name">' + escapeHtml(cat) + '</span>' +
+          '<span style="' + (over ? "color:var(--rust);" : "color:var(--muted);") + '">' + fmt(spent) + ' / ' + fmt(limit) + (over ? " ⚠️" : "") + '</span></div>' +
+          '<div class="bz-budget-track"><div class="bz-budget-fill" style="width:' + pct + '%;background:' + barColor + ';"></div></div>' +
+          '<button class="bz-budget-del" data-budgetdel="' + escapeHtml(cat) + '">Ukloni limit</button>' +
+          '</div>';
+      }).join("");
+      Array.prototype.forEach.call(container.querySelectorAll("[data-budgetdel]"), function (btn) {
+        btn.addEventListener("click", function () { deleteBudget(btn.getAttribute("data-budgetdel")); });
+      });
+    }
+    var sel = document.getElementById("budgetCategorySelect");
+    var available = categoryNames().filter(function (c) { return cats.indexOf(c) === -1 && c !== "Prihod"; });
+    sel.innerHTML = available.map(function (c) { return '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>'; }).join("");
+  }
+
   function renderLoansView() {
     var monthly = 0, remainingTotal = 0;
     state.loans.forEach(function (l) {
@@ -2025,6 +2098,7 @@
     document.getElementById("valBalance").textContent = state.balanceRevealed ? ((balance >= 0 ? "" : "-") + fmt(balance)) : "••••••";
     document.getElementById("valIncome").textContent = state.incomeRevealed ? fmt(income) : "••••••";
     document.getElementById("valExpense").textContent = fmt(expense);
+    renderBudgets(monthTx);
 
     var accToggleBtn = document.getElementById("accToggleBtn");
     accToggleBtn.textContent = state.accExpanded ? "Sakrij stanje po računima ▴" : "Prikaži stanje po računima ▾";
@@ -2745,6 +2819,16 @@
     importCandidates = [];
     document.getElementById("importReviewPanel").style.display = "none";
     render();
+  });
+
+  document.getElementById("budgetAddBtn").addEventListener("click", function () {
+    var catSel = document.getElementById("budgetCategorySelect");
+    var input = document.getElementById("budgetLimitInput");
+    var val = parseFloat(String(input.value).replace(",", "."));
+    if (!catSel.value) { alert("Izaberi kategoriju."); return; }
+    if (isNaN(val) || val <= 0) { alert("Unesi validan limit."); return; }
+    setBudget(catSel.value, val);
+    input.value = "";
   });
 
   render();
