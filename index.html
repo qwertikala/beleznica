@@ -202,7 +202,7 @@
     <span>💾 Backup / Izvoz</span>
   </div>
   <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border); font-size:10px; color:var(--muted); text-align:center;">
-    Verzija: 2026-07-23 v19
+    Verzija: 2026-07-23 v20
   </div>
 </div>
 
@@ -1524,11 +1524,12 @@
   function parseWalletText(text) {
     var lines = text.split("\n").map(function (l) { return l.trim(); }).filter(Boolean);
     var dateLineRegex = /^\d{1,2}\s+[A-Za-zčćžšđ]{3,9}\.?$/i;
-    var amountRegex = /(€\s?\d+[.,]\d{2}|RSD\s?[\d.,]+)\s*$/i;
+    var noiseLineRegex = /^(apple pay|google pay|mastercard|visa|maestro|prije\s+\d+\s+(minut|sat|dan)\w*|\d+\s+(minute|hour|day)s?\s+ago)$/i;
+    var amountRegex = /((?:RSD\s?[\d.,]+)|(?:[\d.,]+\s?RSD)|(?:€\s?\d+[.,]\d{2}))[^\d]{0,4}$/i;
     var results = [];
     var pendingName = [];
     lines.forEach(function (line) {
-      if (dateLineRegex.test(line)) return;
+      if (dateLineRegex.test(line) || noiseLineRegex.test(line)) return;
       var m = line.match(amountRegex);
       if (m) {
         var namePart = line.slice(0, m.index).trim();
