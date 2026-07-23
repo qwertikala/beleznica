@@ -294,11 +294,6 @@
     </div>
   </div>
 
-  <div class="bz-panel" id="catPanel" style="display:none;">
-    <div class="bz-section-title">Rashodi po kategoriji</div>
-    <div id="catRows"></div>
-  </div>
-
   <div class="bz-panel">
     <div class="bz-section-title" id="txSectionTitle">Sve transakcije</div>
     <div class="bz-form-row" style="margin-bottom:8px;">
@@ -407,6 +402,11 @@
       </div>
     </form>
     <div id="wishlistRows" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="bz-panel" id="catPanel" style="display:none;">
+    <div class="bz-section-title">Rashodi po kategoriji</div>
+    <div id="catRows"></div>
   </div>
   </div>
 
@@ -672,7 +672,7 @@
     state.paymentFilter = null;
     state.searchQuery = "";
     state.editingId = null;
-    state.visibleCount = 15;
+    state.visibleCount = 6;
     state.selectedMonth = todayISO().slice(0, 7);
     state.balanceRevealed = false;
     state.incomeRevealed = false;
@@ -815,7 +815,7 @@
     manualCategoryTouched: false,
     categoryFilter: null,
     searchQuery: "",
-    visibleCount: 15,
+    visibleCount: 6,
     selectedMonth: todayISO().slice(0, 7),
     paymentMethods: [],
     paymentFilter: null,
@@ -2068,7 +2068,7 @@
         row.addEventListener("click", function () {
           var cat = row.getAttribute("data-catfilter");
           state.categoryFilter = state.categoryFilter === cat ? null : cat;
-          state.visibleCount = 15;
+          state.visibleCount = 6;
           render();
         });
       });
@@ -2098,7 +2098,7 @@
         row.addEventListener("click", function () {
           var pay = row.getAttribute("data-payfilter");
           state.paymentFilter = state.paymentFilter === pay ? null : pay;
-          state.visibleCount = 15;
+          state.visibleCount = 6;
           state.payExpanded = true;
           render();
         });
@@ -2205,9 +2205,9 @@
     }
     var loadMoreWrap = document.getElementById("loadMoreWrap");
     if (sortedAll.length > state.visibleCount) {
-      loadMoreWrap.innerHTML = '<button class="bz-btn ghost" id="loadMoreBtn" style="margin-top:0;">Učitaj još (' + (sortedAll.length - state.visibleCount) + ' preostalo)</button>';
+      loadMoreWrap.innerHTML = '<button class="bz-btn ghost" id="loadMoreBtn" style="margin-top:0;">Vidi još (' + (sortedAll.length - state.visibleCount) + ' preostalo)</button>';
       document.getElementById("loadMoreBtn").addEventListener("click", function () {
-        state.visibleCount += 15;
+        state.visibleCount += 6;
         render();
       });
     } else {
@@ -2463,24 +2463,24 @@
 
   document.getElementById("searchInput").addEventListener("input", function () {
     state.searchQuery = this.value;
-    state.visibleCount = 15;
+    state.visibleCount = 6;
     render();
   });
   document.getElementById("filterCategorySelect").addEventListener("change", function () {
     state.categoryFilter = this.value || null;
-    state.visibleCount = 15;
+    state.visibleCount = 6;
     render();
   });
   document.getElementById("filterPaymentSelect").addEventListener("change", function () {
     state.paymentFilter = this.value || null;
-    state.visibleCount = 15;
+    state.visibleCount = 6;
     render();
   });
   document.getElementById("clearFiltersBtn").addEventListener("click", function () {
     state.categoryFilter = null;
     state.paymentFilter = null;
     state.searchQuery = "";
-    state.visibleCount = 15;
+    state.visibleCount = 6;
     document.getElementById("searchInput").value = "";
     render();
   });
@@ -2494,19 +2494,19 @@
   });
   document.getElementById("monthPrevBtn").addEventListener("click", function () {
     state.selectedMonth = shiftMonth(state.selectedMonth, -1);
-    state.visibleCount = 15;
+    state.visibleCount = 6;
     render();
   });
   document.getElementById("monthNextBtn").addEventListener("click", function () {
     var currentMonth = todayISO().slice(0, 7);
     if (state.selectedMonth >= currentMonth) return;
     state.selectedMonth = shiftMonth(state.selectedMonth, 1);
-    state.visibleCount = 15;
+    state.visibleCount = 6;
     render();
   });
   document.getElementById("monthTodayBtn").addEventListener("click", function () {
     state.selectedMonth = todayISO().slice(0, 7);
-    state.visibleCount = 15;
+    state.visibleCount = 6;
     render();
   });
   function requestPinReveal(onSuccess) {
