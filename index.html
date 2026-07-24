@@ -190,6 +190,7 @@
   .bz-wishlist-text { flex: 1; }
   .bz-wishlist-row.done .bz-wishlist-text { text-decoration: line-through; color: var(--muted); }
   .bz-wishlist-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; }
+  .bz-cat-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-right: 6px; vertical-align: middle; }
 </style>
 <link rel="manifest" href="./manifest.json" />
 </head>
@@ -209,7 +210,7 @@
     <span data-i18n="drawerBackup">💾 Backup / Izvoz</span>
   </div>
   <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border); font-size:10px; color:var(--muted); text-align:center;">
-    Verzija: 2026-07-23 v24 (PWA offline)
+    Verzija: 2026-07-24 v24.1 (PWA offline)
   </div>
 </div>
 
@@ -262,8 +263,10 @@
           <button type="button" class="income" id="currEurBtn" style="min-width:52px;">EUR</button>
         </div>
       </div>
-      <div class="bz-form-row" style="margin-top:4px;">
+      <div class="bz-form-row" style="margin-top:4px; align-items:center; gap:6px;">
         <span id="eurConvertPreview" style="font-size:11.5px; color:var(--muted); display:none;"></span>
+        <button type="button" id="eurEditRateBtn" title="Ručno unesi kurs" style="display:none; background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; padding:0 2px;">✏️</button>
+        <input type="number" id="eurManualRateInput" step="0.01" min="1" placeholder="Kurs EUR→RSD" style="display:none; width:120px; background:var(--surface2); border:1px solid var(--gold); border-radius:4px; color:var(--text); font-size:13px; padding:3px 7px;" />
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
         <select class="bz-input" id="manualCategory" style="flex:1;"></select>
@@ -2301,8 +2304,10 @@
         } else {
           payTag = '<button class="bz-date-btn" data-editpay="' + t.id + '" title="Promeni način plaćanja" style="color:var(--muted);">' + escapeHtml(t.paymentMethod || "način plaćanja?") + '</button>';
         }
+        var catDot = '<span class="bz-cat-dot" title="' + escapeHtml(t.category || "Ostalo") + '" style="background:' + color + ';"></span>';
         return '<div class="bz-row">' +
           '<div class="bz-row-top">' +
+          catDot +
           '<span class="bz-desc" data-toggledesc="' + t.id + '">' + escapeHtml(t.description) + '</span>' +
           amountHtml +
           '</div>' +
@@ -2479,10 +2484,21 @@
   var lastEurRate = null;
   function updateEurPreview() {
     var preview = document.getElementById("eurConvertPreview");
-    if (currencyMode !== "EUR") { preview.style.display = "none"; return; }
+    var pencilBtn = document.getElementById("eurEditRateBtn");
+    var manualRateInput = document.getElementById("eurManualRateInput");
+    if (currencyMode !== "EUR") {
+      preview.style.display = "none";
+      pencilBtn.style.display = "none";
+      return;
+    }
     var raw = document.getElementById("manualAmount").value;
     var val = parseFloat(String(raw).replace(",", "."));
-    if (isNaN(val) || val <= 0) { preview.style.display = "none"; return; }
+    if (isNaN(val) || val <= 0) {
+      preview.style.display = "none";
+      pencilBtn.style.display = "none";
+      return;
+    }
+    pencilBtn.style.display = (manualRateInput.style.display === "none" || manualRateInput.style.display === "") ? "inline" : "none";
     preview.style.display = "inline";
     if (lastEurRate) {
       preview.textContent = "≈ " + fmt(val * lastEurRate) + " (kurs " + lastEurRate.toFixed(2) + ")";
@@ -2492,7 +2508,7 @@
         lastEurRate = rate;
         updateEurPreview();
       }).catch(function () {
-        preview.textContent = "Kurs nije dostupan — proveri internet konekciju.";
+        preview.textContent = "Kurs nije dostupan — unesi ručno ✏️";
       });
     }
   }
@@ -2509,6 +2525,29 @@
     updateEurPreview();
   });
   document.getElementById("manualAmount").addEventListener("input", updateEurPreview);
+
+  document.getElementById("eurEditRateBtn").addEventListener("click", function () {
+    var manualRateInput = document.getElementById("eurManualRateInput");
+    var pencilBtn = document.getElementById("eurEditRateBtn");
+    manualRateInput.style.display = "inline-block";
+    pencilBtn.style.display = "none";
+    manualRateInput.value = lastEurRate ? lastEurRate.toFixed(2) : "";
+    manualRateInput.focus();
+  });
+  document.getElementById("eurManualRateInput").addEventListener("input", function () {
+    var val = parseFloat(this.value);
+    if (!isNaN(val) && val > 0) {
+      lastEurRate = val;
+      updateEurPreview();
+    }
+  });
+  document.getElementById("eurManualRateInput").addEventListener("blur", function () {
+    this.style.display = "none";
+    document.getElementById("eurEditRateBtn").style.display = currencyMode === "EUR" ? "inline" : "none";
+  });
+  document.getElementById("eurManualRateInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === "Escape") this.blur();
+  });
 
   document.getElementById("manualForm").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -3183,6 +3222,46 @@
     hideBackupReminder();
   });
   checkBackupReminder();
+
+  // ==================== RECURRING NOTIFIKACIJE ====================
+  function checkRecurringNotifications() {
+    if (!("Notification" in window)) return;
+    var today = todayISO();
+    var todayDay = parseInt(today.slice(8, 10), 10);
+    var currentMonth = today.slice(0, 7);
+    var pending = state.recurring.filter(function (r) {
+      if (!r.dayOfMonth) return false;
+      if (r.durationMode === "limited" && r.monthsLeft <= 0) return false;
+      if (r.dayOfMonth !== todayDay) return false;
+      var applied = r.lastAppliedMonth === currentMonth;
+      return !applied;
+    });
+    if (pending.length === 0) return;
+    var lastNotifDay = "";
+    try { lastNotifDay = localStorage.getItem("bz_recur_notif_day") || ""; } catch(e) {}
+    if (lastNotifDay === today) return;
+    function sendNotifs() {
+      pending.forEach(function (r) {
+        try {
+          new Notification("Beležnica — ponavljajuća stavka", {
+            body: r.description + " · " + (r.amount < 0 ? "-" : "+") + fmt(r.amount),
+            icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230F1410'/><text x='32' y='46' font-size='40' text-anchor='middle' fill='%23C9A227'>₿</text></svg>",
+            tag: "bz-recur-" + r.id
+          });
+        } catch(ex) {}
+      });
+      try { localStorage.setItem("bz_recur_notif_day", today); } catch(e) {}
+    }
+    if (Notification.permission === "granted") {
+      sendNotifs();
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(function (perm) {
+        if (perm === "granted") sendNotifs();
+      });
+    }
+  }
+  checkRecurringNotifications();
+  // ==================== END RECURRING NOTIFIKACIJE ====================
 })();
 
 if ("serviceWorker" in navigator) {
