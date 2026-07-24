@@ -202,7 +202,7 @@
     <span>💾 Backup / Izvoz</span>
   </div>
   <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border); font-size:10px; color:var(--muted); text-align:center;">
-    Verzija: 2026-07-23 v20
+    Verzija: 2026-07-23 v21
   </div>
 </div>
 
@@ -278,23 +278,6 @@
     <div class="bz-error" id="errorMsg" style="display:none;"></div>
   </div>
 
-  <div class="bz-panel">
-    <div class="bz-section-title">🔄 Prenos / podizanje keša</div>
-    <div class="bz-hint" style="margin-bottom:8px;">Prebacuje novac između tvojih računa (npr. podizanje keša sa kartice). Ne računa se kao trošak niti prihod.</div>
-    <form id="transferForm">
-      <div class="bz-form-row">
-        <select class="bz-input" id="transferFrom" style="flex:1;"></select>
-        <span style="color:var(--muted);">→</span>
-        <select class="bz-input" id="transferTo" style="flex:1;"></select>
-      </div>
-      <div class="bz-form-row" style="margin-top:8px;">
-        <input class="bz-input amount" id="transferAmount" placeholder="Iznos" inputmode="decimal" style="flex:1;" />
-      </div>
-      <button class="bz-btn" type="submit" style="margin-top:12px;">Izvrši prenos</button>
-    </form>
-    <div class="bz-error" id="transferError" style="display:none;"></div>
-  </div>
-
   <div class="bz-panel" id="importReviewPanel" style="display:none;">
     <div class="bz-section-title">Pregled prepoznatih stavki — proveri pre uvoza</div>
     <div class="bz-hint" style="margin-bottom:10px;">OCR nije savršen — ispravi opis/iznos gde treba, isključi štiklu ako nešto ne valja, izaberi trošak/prihod i kategoriju.</div>
@@ -336,12 +319,36 @@
         <input class="bz-input" id="recurringDay" type="number" min="1" max="31" placeholder="Dan (1-31)" style="width:110px;" />
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
+        <div class="bz-sign">
+          <button type="button" class="expense active" id="recurringDurIndefinite">Do daljnjeg</button>
+          <button type="button" class="income" id="recurringDurLimited">Ograničeno</button>
+        </div>
+        <input class="bz-input" id="recurringMonthsLeft" type="number" min="1" placeholder="Broj meseci" style="width:120px; display:none;" />
+      </div>
+      <div class="bz-form-row" style="margin-top:8px;">
         <select class="bz-input" id="recurringCategory" style="flex:1;"></select>
         <select class="bz-input" id="recurringPaymentMethod" style="flex:1;"></select>
       </div>
       <button class="bz-btn" type="submit" style="margin-top:12px; width:100%;">Dodaj ponavljajuću stavku</button>
     </form>
     <div id="recurringRows" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="bz-panel">
+    <div class="bz-section-title">🔄 Prenos / podizanje keša</div>
+    <div class="bz-hint" style="margin-bottom:8px;">Prebacuje novac između tvojih računa (npr. podizanje keša sa kartice). Ne računa se kao trošak niti prihod.</div>
+    <form id="transferForm">
+      <div class="bz-form-row">
+        <select class="bz-input" id="transferFrom" style="flex:1;"></select>
+        <span style="color:var(--muted);">→</span>
+        <select class="bz-input" id="transferTo" style="flex:1;"></select>
+      </div>
+      <div class="bz-form-row" style="margin-top:8px;">
+        <input class="bz-input amount" id="transferAmount" placeholder="Iznos" inputmode="decimal" style="flex:1;" />
+      </div>
+      <button class="bz-btn" type="submit" style="margin-top:12px;">Izvrši prenos</button>
+    </form>
+    <div class="bz-error" id="transferError" style="display:none;"></div>
   </div>
 
   <div class="bz-panel">
@@ -1784,7 +1791,12 @@
   }
 
   function addRecurringItem(data) {
-    var item = { id: uid(), description: data.description, amount: data.amount, category: data.category, paymentMethod: data.paymentMethod, dayOfMonth: data.dayOfMonth || null, lastAppliedMonth: null };
+    var item = {
+      id: uid(), description: data.description, amount: data.amount, category: data.category, paymentMethod: data.paymentMethod,
+      dayOfMonth: data.dayOfMonth || null, lastAppliedMonth: null,
+      durationMode: data.durationMode || "indefinite",
+      monthsLeft: data.durationMode === "limited" ? data.monthsLeft : null
+    };
     state.recurring = [item].concat(state.recurring);
     saveRecurring();
     render();
@@ -1803,9 +1815,11 @@
     if (!item) return;
     var currentMonth = todayISO().slice(0, 7);
     if (item.lastAppliedMonth === currentMonth) return;
+    if (item.durationMode === "limited" && item.monthsLeft <= 0) return;
     var t = { id: uid(), description: item.description, amount: item.amount, date: dateForRecurring(item), category: item.category, paymentMethod: item.paymentMethod };
     state.transactions = [t].concat(state.transactions);
     item.lastAppliedMonth = currentMonth;
+    if (item.durationMode === "limited") item.monthsLeft = Math.max(0, item.monthsLeft - 1);
     saveTransactions();
     saveRecurring();
     render();
@@ -1825,13 +1839,21 @@
     var currentMonth = todayISO().slice(0, 7);
     container.innerHTML = state.recurring.map(function (r) {
       var appliedThisMonth = r.lastAppliedMonth === currentMonth;
+      var finished = r.durationMode === "limited" && r.monthsLeft <= 0;
       var color = r.amount >= 0 ? "var(--sage)" : "var(--rust)";
-      return '<div class="bz-recur-row">' +
+      var durationText = r.durationMode === "limited" ? " · još " + r.monthsLeft + " mes." : " · do daljnjeg";
+      var btnHtml;
+      if (finished) {
+        btnHtml = '<button class="bz-recur-add-btn" disabled>✓ Završeno</button>';
+      } else {
+        btnHtml = '<button class="bz-recur-add-btn" data-recuradd="' + r.id + '"' + (appliedThisMonth ? " disabled" : "") + '>' + (appliedThisMonth ? "✓ Dodato za " + monthLabel(currentMonth) : "+ Dodaj za " + monthLabel(currentMonth)) + '</button>';
+      }
+      return '<div class="bz-recur-row"' + (finished ? ' style="opacity:0.5;"' : '') + '>' +
         '<div class="bz-recur-top"><span class="bz-recur-name">' + escapeHtml(r.description) + '</span>' +
         '<span style="color:' + color + '; font-family:Georgia,serif;">' + (r.amount >= 0 ? "+" : "") + fmt(r.amount) + '</span></div>' +
-        '<div class="bz-recur-meta">' + escapeHtml(r.category || "Ostalo") + (r.paymentMethod ? " · " + escapeHtml(r.paymentMethod) : "") + (r.dayOfMonth ? " · svakog " + r.dayOfMonth + ". u mesecu" : "") + '</div>' +
+        '<div class="bz-recur-meta">' + escapeHtml(r.category || "Ostalo") + (r.paymentMethod ? " · " + escapeHtml(r.paymentMethod) : "") + (r.dayOfMonth ? " · svakog " + r.dayOfMonth + ". u mesecu" : "") + durationText + '</div>' +
         '<div class="bz-recur-actions">' +
-        '<button class="bz-recur-add-btn" data-recuradd="' + r.id + '"' + (appliedThisMonth ? " disabled" : "") + '>' + (appliedThisMonth ? "✓ Dodato za " + monthLabel(currentMonth) : "+ Dodaj za " + monthLabel(currentMonth)) + '</button>' +
+        btnHtml +
         '<button class="bz-recur-del" data-recurdel="' + r.id + '">Obriši</button>' +
         '</div></div>';
     }).join("");
@@ -2767,6 +2789,21 @@
     document.getElementById("recurringDirIncome").classList.add("active");
     document.getElementById("recurringDirExpense").classList.remove("active");
   });
+
+  var recurringDurationMode = "indefinite";
+  document.getElementById("recurringDurIndefinite").addEventListener("click", function () {
+    recurringDurationMode = "indefinite";
+    document.getElementById("recurringDurIndefinite").classList.add("active");
+    document.getElementById("recurringDurLimited").classList.remove("active");
+    document.getElementById("recurringMonthsLeft").style.display = "none";
+  });
+  document.getElementById("recurringDurLimited").addEventListener("click", function () {
+    recurringDurationMode = "limited";
+    document.getElementById("recurringDurLimited").classList.add("active");
+    document.getElementById("recurringDurIndefinite").classList.remove("active");
+    document.getElementById("recurringMonthsLeft").style.display = "block";
+  });
+
   document.getElementById("recurringForm").addEventListener("submit", function (e) {
     e.preventDefault();
     var descEl = document.getElementById("recurringDesc");
@@ -2774,18 +2811,23 @@
     var catEl = document.getElementById("recurringCategory");
     var payEl = document.getElementById("recurringPaymentMethod");
     var dayEl = document.getElementById("recurringDay");
+    var monthsEl = document.getElementById("recurringMonthsLeft");
     var val = parseFloat(String(amountEl.value).replace(",", "."));
     if (!descEl.value.trim() || isNaN(val) || val <= 0) { alert("Unesi opis i validan iznos."); return; }
     var dayVal = parseInt(dayEl.value, 10);
     if (dayEl.value && (isNaN(dayVal) || dayVal < 1 || dayVal > 31)) { alert("Dan u mesecu mora biti između 1 i 31."); return; }
+    var monthsVal = parseInt(monthsEl.value, 10);
+    if (recurringDurationMode === "limited" && (isNaN(monthsVal) || monthsVal < 1)) { alert("Unesi broj preostalih meseci (bar 1)."); return; }
     addRecurringItem({
       description: descEl.value.trim(),
       amount: recurringDirMode === "expense" ? -Math.abs(val) : Math.abs(val),
       category: catEl.value || "Ostalo",
       paymentMethod: payEl.value || null,
-      dayOfMonth: dayEl.value ? dayVal : null
+      dayOfMonth: dayEl.value ? dayVal : null,
+      durationMode: recurringDurationMode,
+      monthsLeft: recurringDurationMode === "limited" ? monthsVal : null
     });
-    descEl.value = ""; amountEl.value = ""; dayEl.value = "";
+    descEl.value = ""; amountEl.value = ""; dayEl.value = ""; monthsEl.value = "";
   });
   document.getElementById("qrCancelBtn").addEventListener("click", closeQrModal);
   document.getElementById("qrAddBtn").addEventListener("click", function () {
