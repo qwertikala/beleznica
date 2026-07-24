@@ -191,6 +191,7 @@
   .bz-wishlist-row.done .bz-wishlist-text { text-decoration: line-through; color: var(--muted); }
   .bz-wishlist-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; }
 </style>
+<link rel="manifest" href="./manifest.json" />
 </head>
 <body>
 <div class="bz-overlay" id="drawerOverlay"></div>
@@ -208,7 +209,7 @@
     <span>💾 Backup / Izvoz</span>
   </div>
   <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border); font-size:10px; color:var(--muted); text-align:center;">
-    Verzija: 2026-07-23 v22
+    Verzija: 2026-07-23 v24 (PWA offline)
   </div>
 </div>
 
@@ -221,6 +222,7 @@
       <div class="bz-sub" id="appSub">lični dnevnik prihoda i troškova · automatska kategorizacija</div>
     </div>
     <button class="bz-hamburger" id="themeToggleBtn" title="Promeni temu">☀️</button>
+    <button class="bz-hamburger" id="langToggleBtn" title="Change language" style="margin-left:6px;">🇬🇧</button>
   </div>
 
   <div id="ledgerView">
@@ -1817,15 +1819,18 @@
     var day = Math.min(item.dayOfMonth, daysInMonth);
     return currentMonth + "-" + String(day).padStart(2, "0");
   }
+  function recurringAppliedThisMonth(item) {
+    var currentMonth = todayISO().slice(0, 7);
+    return state.transactions.some(function (t) { return t.recurringId === item.id && t.date.slice(0, 7) === currentMonth; });
+  }
   function applyRecurring(id) {
     var item = state.recurring.filter(function (x) { return x.id === id; })[0];
     if (!item) return;
-    var currentMonth = todayISO().slice(0, 7);
-    if (item.lastAppliedMonth === currentMonth) return;
+    if (recurringAppliedThisMonth(item)) return;
     if (item.durationMode === "limited" && item.monthsLeft <= 0) return;
-    var t = { id: uid(), description: item.description, amount: item.amount, date: dateForRecurring(item), category: item.category, paymentMethod: item.paymentMethod };
+    var t = { id: uid(), description: item.description, amount: item.amount, date: dateForRecurring(item), category: item.category, paymentMethod: item.paymentMethod, recurringId: item.id };
     state.transactions = [t].concat(state.transactions);
-    item.lastAppliedMonth = currentMonth;
+    item.lastAppliedMonth = todayISO().slice(0, 7);
     if (item.durationMode === "limited") item.monthsLeft = Math.max(0, item.monthsLeft - 1);
     saveTransactions();
     saveRecurring();
@@ -1845,7 +1850,7 @@
     }
     var currentMonth = todayISO().slice(0, 7);
     container.innerHTML = state.recurring.map(function (r) {
-      var appliedThisMonth = r.lastAppliedMonth === currentMonth;
+      var appliedThisMonth = recurringAppliedThisMonth(r);
       var finished = r.durationMode === "limited" && r.monthsLeft <= 0;
       var color = r.amount >= 0 ? "var(--sage)" : "var(--rust)";
       var durationText = r.durationMode === "limited" ? " · još " + r.monthsLeft + " mes." : " · do daljnjeg";
@@ -2421,7 +2426,16 @@
 
     Array.prototype.forEach.call(txContainer.querySelectorAll("[data-del]"), function (btn) {
       btn.addEventListener("click", function () {
-        state.transactions = state.transactions.filter(function (t) { return t.id !== btn.getAttribute("data-del"); });
+        var delId = btn.getAttribute("data-del");
+        var deletedTx = state.transactions.filter(function (t) { return t.id === delId; })[0];
+        state.transactions = state.transactions.filter(function (t) { return t.id !== delId; });
+        if (deletedTx && deletedTx.recurringId) {
+          var recurItem = state.recurring.filter(function (r) { return r.id === deletedTx.recurringId; })[0];
+          if (recurItem && recurItem.durationMode === "limited") {
+            recurItem.monthsLeft = (recurItem.monthsLeft || 0) + 1;
+            saveRecurring();
+          }
+        }
         saveTransactions();
         render();
       });
@@ -2902,6 +2916,14 @@
   });
   checkBackupReminder();
 })();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./service-worker.js").catch(function (err) {
+      console.warn("Service worker registration failed:", err);
+    });
+  });
+}
 </script>
 </body>
 </html>
