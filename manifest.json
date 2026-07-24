@@ -1,0 +1,14 @@
+{
+  "name": "Beležnica",
+  "short_name": "Beležnica",
+  "description": "Lični dnevnik prihoda i troškova",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0F1410",
+  "theme_color": "#0F1410",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
