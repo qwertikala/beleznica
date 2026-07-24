@@ -196,17 +196,17 @@
 <body>
 <div class="bz-overlay" id="drawerOverlay"></div>
 <div class="bz-drawer" id="drawer">
-  <div class="bz-drawer-title">Tabovi</div>
+  <div class="bz-drawer-title" data-i18n="tabs">Tabovi</div>
   <div id="drawerTabs"></div>
   <div class="bz-drawer-addrow">
     <input type="text" id="newTabInput" placeholder="Novi tab (npr. Binance)" />
     <button id="addTabBtn">+</button>
   </div>
   <div class="bz-drawer-tab" id="insightsDrawerBtn" style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px;">
-    <span>📊 Analiza</span>
+    <span data-i18n="drawerAnalytics">📊 Analiza</span>
   </div>
   <div class="bz-drawer-tab" id="backupDrawerBtn">
-    <span>💾 Backup / Izvoz</span>
+    <span data-i18n="drawerBackup">💾 Backup / Izvoz</span>
   </div>
   <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border); font-size:10px; color:var(--muted); text-align:center;">
     Verzija: 2026-07-23 v24 (PWA offline)
@@ -219,7 +219,7 @@
     <button class="bz-hamburger" id="hamburgerBtn"><span></span></button>
     <div style="flex:1; margin-left:12px;">
       <h1 class="bz-title" id="appTitle">Bel<span>e</span>žnica</h1>
-      <div class="bz-sub" id="appSub">lični dnevnik prihoda i troškova · automatska kategorizacija</div>
+      <div class="bz-sub" id="appSub" data-i18n="appSub">lični dnevnik prihoda i troškova · automatska kategorizacija</div>
     </div>
     <button class="bz-hamburger" id="themeToggleBtn" title="Promeni temu">☀️</button>
     <button class="bz-hamburger" id="langToggleBtn" title="Change language" style="margin-left:6px;">🇬🇧</button>
@@ -227,35 +227,35 @@
 
   <div id="ledgerView">
   <div class="bz-month-nav">
-    <button id="monthPrevBtn" title="Prethodni mesec">‹</button>
+    <button id="monthPrevBtn" title="Prethodni mesec" data-i18n-title="prevMonth">‹</button>
     <span id="monthLabel">—</span>
-    <button id="monthNextBtn" title="Sledeći mesec">›</button>
-    <button id="monthTodayBtn" style="display:none;">Ovaj mesec</button>
+    <button id="monthNextBtn" title="Sledeći mesec" data-i18n-title="nextMonth">›</button>
+    <button id="monthTodayBtn" style="display:none;" data-i18n="thisMonth">Ovaj mesec</button>
   </div>
   <div class="bz-summary">
-    <div class="bz-card balance" id="balanceCard" style="cursor:pointer;"><div class="bz-card-label">Stanje 🔒</div><div class="bz-card-value" id="valBalance">••••••</div></div>
-    <div class="bz-card income" id="incomeCard" style="cursor:pointer;"><div class="bz-card-label">Prihodi 🔒</div><div class="bz-card-value" id="valIncome">••••••</div></div>
-    <div class="bz-card expense"><div class="bz-card-label">Rashodi</div><div class="bz-card-value" id="valExpense">0 RSD</div></div>
+    <div class="bz-card balance" id="balanceCard" style="cursor:pointer;"><div class="bz-card-label" data-i18n="balance">Stanje 🔒</div><div class="bz-card-value" id="valBalance">••••••</div></div>
+    <div class="bz-card income" id="incomeCard" style="cursor:pointer;"><div class="bz-card-label" data-i18n="income">Prihodi 🔒</div><div class="bz-card-value" id="valIncome">••••••</div></div>
+    <div class="bz-card expense"><div class="bz-card-label" data-i18n="expenses">Rashodi</div><div class="bz-card-value" id="valExpense">0 RSD</div></div>
   </div>
 
   <div class="bz-panel" id="stanQuickPanel" style="display:none;">
-    <div class="bz-section-title">Mesečni računi</div>
-    <div class="bz-hint" style="margin-bottom:10px;">Uvek isti računi — samo upiši cifru za ovaj mesec.</div>
+    <div class="bz-section-title" data-i18n="monthlyBills">Mesečni računi</div>
+    <div class="bz-hint" style="margin-bottom:10px;" data-i18n="monthlyBillsHint">Uvek isti računi — samo upiši cifru za ovaj mesec.</div>
     <div id="stanQuickRows"></div>
-    <button class="bz-btn" id="stanQuickSaveBtn" style="width:100%; margin-top:8px;">Sačuvaj mesečne račune</button>
+    <button class="bz-btn" id="stanQuickSaveBtn" style="width:100%; margin-top:8px;" data-i18n="saveMonthlyBills">Sačuvaj mesečne račune</button>
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title">Dodaj transakciju</div>
+    <div class="bz-section-title" data-i18n="addTransaction">Dodaj transakciju</div>
     <form id="manualForm">
       <div class="bz-form-row">
-        <input class="bz-input desc" id="manualDesc" placeholder="Opis" style="flex:1;" />
-        <input class="bz-input amount" id="manualAmount" placeholder="Iznos" inputmode="decimal" />
+        <input class="bz-input desc" id="manualDesc" placeholder="Opis" data-i18n-placeholder="descPlaceholder" style="flex:1;" />
+        <input class="bz-input amount" id="manualAmount" placeholder="Iznos" data-i18n-placeholder="amountPlaceholder" inputmode="decimal" />
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
         <div class="bz-sign">
-          <button type="button" class="expense active" id="signExpense">Trošak</button>
-          <button type="button" class="income" id="signIncome">Prihod</button>
+          <button type="button" class="expense active" id="signExpense" data-i18n="expense">Trošak</button>
+          <button type="button" class="income" id="signIncome" data-i18n="incomeBtn">Prihod</button>
         </div>
         <div class="bz-sign">
           <button type="button" class="expense active" id="currRsdBtn" style="min-width:52px;">RSD</button>
@@ -273,79 +273,79 @@
         <button class="bz-btn ghost" type="button" style="margin-top:0; padding:9px 12px;" id="addPaymentMethodBtn">+</button>
       </div>
       <div class="bz-form-row" style="margin-top:12px;">
-        <button class="bz-btn" type="submit" style="margin-top:0; flex:1;">Dodaj</button>
-        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="importImageBtn">📷 Sa slike</button>
+        <button class="bz-btn" type="submit" style="margin-top:0; flex:1;" data-i18n="add">Dodaj</button>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="importImageBtn" data-i18n="fromImage">📷 Sa slike</button>
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
-        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="scanQrGalleryBtn">🖼️ Uvezi QR sa slike (galerija)</button>
+        <button class="bz-btn ghost" type="button" style="margin-top:0; flex:1; font-size:12px; white-space:nowrap;" id="scanQrGalleryBtn" data-i18n="importQrGallery">🖼️ Uvezi QR sa slike (galerija)</button>
       </div>
     </form>
     <input type="file" id="importImageInput" accept="image/*" style="display:none;" />
     <input type="file" id="qrImageInputGallery" accept="image/*" style="display:none;" />
-    <div class="bz-loading" id="ocrLoading" style="display:none;">Čitam sliku...</div>
-    <div class="bz-loading" id="qrLoading" style="display:none;">Čitam QR kod...</div>
+    <div class="bz-loading" id="ocrLoading" style="display:none;" data-i18n="readingImage">Čitam sliku...</div>
+    <div class="bz-loading" id="qrLoading" style="display:none;" data-i18n="readingQr">Čitam QR kod...</div>
     <div class="bz-error" id="errorMsg" style="display:none;"></div>
   </div>
 
   <div class="bz-panel" id="importReviewPanel" style="display:none;">
-    <div class="bz-section-title">Pregled prepoznatih stavki — proveri pre uvoza</div>
-    <div class="bz-hint" style="margin-bottom:10px;">OCR nije savršen — ispravi opis/iznos gde treba, isključi štiklu ako nešto ne valja, izaberi trošak/prihod i kategoriju.</div>
+    <div class="bz-section-title" data-i18n="reviewItems">Pregled prepoznatih stavki — proveri pre uvoza</div>
+    <div class="bz-hint" style="margin-bottom:10px;" data-i18n="ocrHint">OCR nije savršen — ispravi opis/iznos gde treba, isključi štiklu ako nešto ne valja, izaberi trošak/prihod i kategoriju.</div>
     <div id="importRows"></div>
     <div class="bz-form-row" style="margin-top:12px;">
-      <button class="bz-btn" id="confirmImportBtn">Uvezi izabrano</button>
-      <button class="bz-btn ghost" style="margin-top:0;" id="cancelImportBtn">Otkaži</button>
+      <button class="bz-btn" id="confirmImportBtn" data-i18n="importSelected">Uvezi izabrano</button>
+      <button class="bz-btn ghost" style="margin-top:0;" id="cancelImportBtn" data-i18n="cancel">Otkaži</button>
     </div>
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title" id="txSectionTitle">Sve transakcije</div>
+    <div class="bz-section-title" id="txSectionTitle" data-i18n="allTransactions">Sve transakcije</div>
     <div class="bz-form-row" style="margin-bottom:8px;">
-      <input class="bz-input desc" id="searchInput" placeholder="Pretraži po opisu ili načinu plaćanja..." />
+      <input class="bz-input desc" id="searchInput" placeholder="Pretraži po opisu ili načinu plaćanja..." data-i18n-placeholder="searchPlaceholder" />
     </div>
     <div class="bz-form-row" style="margin-bottom:12px;">
-      <select class="bz-input" id="filterCategorySelect" style="width:140px;"><option value="">Sve kategorije</option></select>
-      <select class="bz-input" id="filterPaymentSelect" style="width:140px;"><option value="">Svi računi</option></select>
-      <button class="bz-btn ghost" style="margin-top:0" id="clearFiltersBtn">Očisti</button>
+      <select class="bz-input" id="filterCategorySelect" style="width:140px;"><option value="" data-i18n="allCategories">Sve kategorije</option></select>
+      <select class="bz-input" id="filterPaymentSelect" style="width:140px;"><option value="" data-i18n="allAccounts">Svi računi</option></select>
+      <button class="bz-btn ghost" style="margin-top:0" id="clearFiltersBtn" data-i18n="clear">Očisti</button>
     </div>
     <div id="filterSumLine" style="display:none;"></div>
-    <div id="txRows"><div class="bz-empty">Još nema unetih transakcija.</div></div>
+    <div id="txRows"><div class="bz-empty" data-i18n="noTransactions">Još nema unetih transakcija.</div></div>
     <div id="loadMoreWrap" style="text-align:center; margin-top:10px;"></div>
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title">🔁 Ponavljajuće transakcije</div>
-    <div class="bz-hint" style="margin-bottom:10px;">Za stavke koje se ponavljaju svakog meseca (pretplate, rate, plata). Ne dodaje se automatski — dugme te podseti kad dođe novi mesec.</div>
+    <div class="bz-section-title" data-i18n="recurringTitle">🔁 Ponavljajuće transakcije</div>
+    <div class="bz-hint" style="margin-bottom:10px;" data-i18n="recurringHint">Za stavke koje se ponavljaju svakog meseca (pretplate, rate, plata). Ne dodaje se automatski — dugme te podseti kad dođe novi mesec.</div>
     <form id="recurringForm">
       <div class="bz-form-row">
-        <input class="bz-input desc" id="recurringDesc" placeholder="Opis (npr. Netflix)" style="flex:1;" />
-        <input class="bz-input amount" id="recurringAmount" placeholder="Iznos" inputmode="decimal" />
+        <input class="bz-input desc" id="recurringDesc" placeholder="Opis (npr. Netflix)" data-i18n-placeholder="recurringDescPlaceholder" style="flex:1;" />
+        <input class="bz-input amount" id="recurringAmount" placeholder="Iznos" data-i18n-placeholder="amountPlaceholder" inputmode="decimal" />
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
         <div class="bz-sign">
-          <button type="button" class="expense active" id="recurringDirExpense">Trošak</button>
-          <button type="button" class="income" id="recurringDirIncome">Prihod</button>
+          <button type="button" class="expense active" id="recurringDirExpense" data-i18n="expense">Trošak</button>
+          <button type="button" class="income" id="recurringDirIncome" data-i18n="incomeBtn">Prihod</button>
         </div>
-        <input class="bz-input" id="recurringDay" type="number" min="1" max="31" placeholder="Dan (1-31)" style="width:110px;" />
+        <input class="bz-input" id="recurringDay" type="number" min="1" max="31" placeholder="Dan (1-31)" data-i18n-placeholder="dayPlaceholder" style="width:110px;" />
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
         <div class="bz-sign">
-          <button type="button" class="expense active" id="recurringDurIndefinite">Do daljnjeg</button>
-          <button type="button" class="income" id="recurringDurLimited">Ograničeno</button>
+          <button type="button" class="expense active" id="recurringDurIndefinite" data-i18n="indefinite">Do daljnjeg</button>
+          <button type="button" class="income" id="recurringDurLimited" data-i18n="limited">Ograničeno</button>
         </div>
-        <input class="bz-input" id="recurringMonthsLeft" type="number" min="1" placeholder="Broj meseci" style="width:120px; display:none;" />
+        <input class="bz-input" id="recurringMonthsLeft" type="number" min="1" placeholder="Broj meseci" data-i18n-placeholder="monthsPlaceholder" style="width:120px; display:none;" />
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
         <select class="bz-input" id="recurringCategory" style="flex:1;"></select>
         <select class="bz-input" id="recurringPaymentMethod" style="flex:1;"></select>
       </div>
-      <button class="bz-btn" type="submit" style="margin-top:12px; width:100%;">Dodaj ponavljajuću stavku</button>
+      <button class="bz-btn" type="submit" style="margin-top:12px; width:100%;" data-i18n="addRecurring">Dodaj ponavljajuću stavku</button>
     </form>
     <div id="recurringRows" style="margin-top:14px;"></div>
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title">🔄 Prenos / podizanje keša</div>
-    <div class="bz-hint" style="margin-bottom:8px;">Prebacuje novac između tvojih računa (npr. podizanje keša sa kartice). Ne računa se kao trošak niti prihod.</div>
+    <div class="bz-section-title" data-i18n="transferTitle">🔄 Prenos / podizanje keša</div>
+    <div class="bz-hint" style="margin-bottom:8px;" data-i18n="transferHint">Prebacuje novac između tvojih računa (npr. podizanje keša sa kartice). Ne računa se kao trošak niti prihod.</div>
     <form id="transferForm">
       <div class="bz-form-row">
         <select class="bz-input" id="transferFrom" style="flex:1;"></select>
@@ -353,173 +353,173 @@
         <select class="bz-input" id="transferTo" style="flex:1;"></select>
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
-        <input class="bz-input amount" id="transferAmount" placeholder="Iznos" inputmode="decimal" style="flex:1;" />
+        <input class="bz-input amount" id="transferAmount" placeholder="Iznos" data-i18n-placeholder="amountPlaceholder" inputmode="decimal" style="flex:1;" />
       </div>
-      <button class="bz-btn" type="submit" style="margin-top:12px;">Izvrši prenos</button>
+      <button class="bz-btn" type="submit" style="margin-top:12px;" data-i18n="executeTransfer">Izvrši prenos</button>
     </form>
     <div class="bz-error" id="transferError" style="display:none;"></div>
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title">Kategorije</div>
-    <div class="bz-hint" style="margin-bottom:8px;">Strelicama menjaš redosled u padajućim menijima.</div>
+    <div class="bz-section-title" data-i18n="categories">Kategorije</div>
+    <div class="bz-hint" style="margin-bottom:8px;" data-i18n="categoriesHint">Strelicama menjaš redosled u padajućim menijima.</div>
     <div id="categoryChips"></div>
     <div class="bz-form-row" style="margin-top:6px;">
-      <input class="bz-input desc" id="newCategoryInput" placeholder="Nova kategorija (npr. Radna prodavnica)" />
-      <button class="bz-btn" style="margin-top:0" id="addCategoryBtn">Dodaj</button>
+      <input class="bz-input desc" id="newCategoryInput" placeholder="Nova kategorija (npr. Radna prodavnica)" data-i18n-placeholder="newCategoryPlaceholder" />
+      <button class="bz-btn" style="margin-top:0" id="addCategoryBtn" data-i18n="add">Dodaj</button>
     </div>
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title">Računi i kartice</div>
-    <div class="bz-hint" style="margin-bottom:8px;">Ukloni × ako ugasiš račun/karticu — ne briše postojeće transakcije, samo je uklanja iz izbora za nove.</div>
+    <div class="bz-section-title" data-i18n="accountsCards">Računi i kartice</div>
+    <div class="bz-hint" style="margin-bottom:8px;" data-i18n="accountsHint">Ukloni × ako ugasiš račun/karticu — ne briše postojeće transakcije, samo je uklanja iz izbora za nove.</div>
     <div id="paymentMethodChips"></div>
     <div class="bz-form-row" style="margin-top:6px;">
-      <input class="bz-input desc" id="newPaymentMethodInput" placeholder="Novi račun/kartica" />
-      <button class="bz-btn" style="margin-top:0" id="addPaymentMethodBtn2">Dodaj</button>
+      <input class="bz-input desc" id="newPaymentMethodInput" placeholder="Novi račun/kartica" data-i18n-placeholder="newAccountPlaceholder" />
+      <button class="bz-btn" style="margin-top:0" id="addPaymentMethodBtn2" data-i18n="add">Dodaj</button>
     </div>
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title">💸 Zaduženja</div>
-    <div class="bz-hint" style="margin-bottom:10px;">Ko duguje tebi, i kome duguješ ti. Ostaje otvoreno dok se ne otplati u potpunosti — možeš uplaćivati deo po deo.</div>
+    <div class="bz-section-title" data-i18n="debtsTitle">💸 Zaduženja</div>
+    <div class="bz-hint" style="margin-bottom:10px;" data-i18n="debtsHint">Ko duguje tebi, i kome duguješ ti. Ostaje otvoreno dok se ne otplati u potpunosti — možeš uplaćivati deo po deo.</div>
     <div class="bz-summary" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:16px;">
-      <div class="bz-card income"><div class="bz-card-label">Duguju meni</div><div class="bz-card-value" id="debtOwedToMe">0 RSD</div></div>
-      <div class="bz-card expense"><div class="bz-card-label">Ja dugujem</div><div class="bz-card-value" id="debtIOwe">0 RSD</div></div>
-      <div class="bz-card balance"><div class="bz-card-label">Neto</div><div class="bz-card-value" id="debtNet">0 RSD</div></div>
+      <div class="bz-card income"><div class="bz-card-label" data-i18n="owedToMe">Duguju meni</div><div class="bz-card-value" id="debtOwedToMe">0 RSD</div></div>
+      <div class="bz-card expense"><div class="bz-card-label" data-i18n="iOwe">Ja dugujem</div><div class="bz-card-value" id="debtIOwe">0 RSD</div></div>
+      <div class="bz-card balance"><div class="bz-card-label" data-i18n="net">Neto</div><div class="bz-card-value" id="debtNet">0 RSD</div></div>
     </div>
     <form id="debtForm">
       <div class="bz-form-row">
-        <input class="bz-input desc" id="debtPerson" placeholder="Ime osobe" />
-        <input class="bz-input amount" id="debtAmount" placeholder="Iznos" inputmode="decimal" />
+        <input class="bz-input desc" id="debtPerson" placeholder="Ime osobe" data-i18n-placeholder="personNamePlaceholder" />
+        <input class="bz-input amount" id="debtAmount" placeholder="Iznos" data-i18n-placeholder="amountPlaceholder" inputmode="decimal" />
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
         <div class="bz-sign">
-          <button type="button" class="expense active" id="debtDirIOwe">Ja dugujem</button>
-          <button type="button" class="income" id="debtDirOwedToMe">Duguje meni</button>
+          <button type="button" class="expense active" id="debtDirIOwe" data-i18n="iOweBtn">Ja dugujem</button>
+          <button type="button" class="income" id="debtDirOwedToMe" data-i18n="owedToMeBtn">Duguje meni</button>
         </div>
       </div>
-      <button class="bz-btn" type="submit" style="margin-top:12px; width:100%;">Dodaj zaduženje</button>
+      <button class="bz-btn" type="submit" style="margin-top:12px; width:100%;" data-i18n="addDebt">Dodaj zaduženje</button>
     </form>
     <div id="debtRows" style="margin-top:14px;"></div>
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title">🎁 Lista želja</div>
-    <div class="bz-hint" style="margin-bottom:10px;">Ostaje na listi dok ne štikliraš da si završio/la — automatski se prenosi u naredni period.</div>
+    <div class="bz-section-title" data-i18n="wishlistTitle">🎁 Lista želja</div>
+    <div class="bz-hint" style="margin-bottom:10px;" data-i18n="wishlistHint">Ostaje na listi dok ne štikliraš da si završio/la — automatski se prenosi u naredni period.</div>
     <form id="wishlistForm">
       <div class="bz-form-row">
-        <input class="bz-input desc" id="wishlistInput" placeholder="Šta želiš da kupiš / uradiš?" style="flex:1;" />
-        <button class="bz-btn" type="submit" style="margin-top:0;">Dodaj</button>
+        <input class="bz-input desc" id="wishlistInput" placeholder="Šta želiš da kupiš / uradiš?" data-i18n-placeholder="wishlistPlaceholder" style="flex:1;" />
+        <button class="bz-btn" type="submit" style="margin-top:0;" data-i18n="add">Dodaj</button>
       </div>
     </form>
     <div id="wishlistRows" style="margin-top:12px;"></div>
   </div>
 
   <div class="bz-panel" id="catPanel" style="display:none;">
-    <div class="bz-section-title">Rashodi po kategoriji</div>
+    <div class="bz-section-title" data-i18n="expensesByCategory">Rashodi po kategoriji</div>
     <div id="catRows"></div>
   </div>
 
   <div class="bz-panel" id="payPanel" style="display:none;">
-    <button class="bz-btn ghost" id="payToggleBtn" style="margin-top:0; width:100%;">Prikaži rashode po načinu plaćanja ▾</button>
+    <button class="bz-btn ghost" id="payToggleBtn" style="margin-top:0; width:100%;" data-i18n="showExpensesByPayment">Prikaži rashode po načinu plaćanja ▾</button>
     <div id="payRowsWrap" style="display:none; margin-top:12px;">
       <div id="payRows"></div>
     </div>
   </div>
 
   <div class="bz-panel">
-    <button class="bz-btn ghost" id="accToggleBtn" style="margin-top:0; width:100%;">Prikaži stanje po računima ▾</button>
+    <button class="bz-btn ghost" id="accToggleBtn" style="margin-top:0; width:100%;" data-i18n="showAccountBalances">Prikaži stanje po računima ▾</button>
     <div id="accountBalanceWrap" style="display:none; margin-top:12px;">
-      <div class="bz-hint" style="margin-bottom:8px;">Ukupno stanje po računu/kartici (sve transakcije i prenosi, ne samo ovaj mesec).</div>
+      <div class="bz-hint" style="margin-bottom:8px;" data-i18n="accountBalancesHint">Ukupno stanje po računu/kartici (sve transakcije i prenosi, ne samo ovaj mesec).</div>
       <div id="accountBalanceRows"></div>
     </div>
   </div>
 
   <div class="bz-panel">
-    <div class="bz-section-title">🎯 Budžetski limiti</div>
-    <div class="bz-hint" style="margin-bottom:10px;">Opciono — postavi mesečni limit za kategorije koje želiš da pratiš. Traka pokazuje koliko si potrošio od limita.</div>
+    <div class="bz-section-title" data-i18n="budgetLimits">🎯 Budžetski limiti</div>
+    <div class="bz-hint" style="margin-bottom:10px;" data-i18n="budgetHint">Opciono — postavi mesečni limit za kategorije koje želiš da pratiš. Traka pokazuje koliko si potrošio od limita.</div>
     <div id="budgetRows" style="margin-bottom:10px;"></div>
     <div class="bz-form-row">
       <select class="bz-input" id="budgetCategorySelect" style="flex:1;"></select>
-      <input class="bz-input amount" id="budgetLimitInput" placeholder="Limit RSD" inputmode="decimal" />
-      <button class="bz-btn" style="margin-top:0;" id="budgetAddBtn">Postavi</button>
+      <input class="bz-input amount" id="budgetLimitInput" placeholder="Limit RSD" data-i18n-placeholder="limitRsd" inputmode="decimal" />
+      <button class="bz-btn" style="margin-top:0;" id="budgetAddBtn" data-i18n="set">Postavi</button>
     </div>
   </div>
   </div>
 
   <div id="loansView" style="display:none;">
     <div class="bz-summary" style="grid-template-columns: 1fr 1fr;">
-      <div class="bz-card expense"><div class="bz-card-label">Mesečna obaveza</div><div class="bz-card-value" id="loansMonthly">0 RSD</div></div>
-      <div class="bz-card balance"><div class="bz-card-label">Ukupno preostalo</div><div class="bz-card-value" id="loansRemaining">0 RSD</div></div>
+      <div class="bz-card expense"><div class="bz-card-label" data-i18n="monthlyObligation">Mesečna obaveza</div><div class="bz-card-value" id="loansMonthly">0 RSD</div></div>
+      <div class="bz-card balance"><div class="bz-card-label" data-i18n="totalRemaining">Ukupno preostalo</div><div class="bz-card-value" id="loansRemaining">0 RSD</div></div>
     </div>
 
     <div class="bz-panel">
-      <div class="bz-section-title">Dodaj kredit / rate na kupovinu</div>
+      <div class="bz-section-title" data-i18n="addLoan">Dodaj kredit / rate na kupovinu</div>
       <form id="loanForm">
         <div class="bz-form-row">
-          <input class="bz-input desc" id="loanName" placeholder="Naziv (npr. Patike, Studentski kredit)" />
+          <input class="bz-input desc" id="loanName" placeholder="Naziv (npr. Patike, Studentski kredit)" data-i18n-placeholder="loanNamePlaceholder" />
         </div>
         <div class="bz-form-row" style="margin-top:8px;">
-          <input class="bz-input amount" id="loanInstallmentAmount" placeholder="Iznos rate" inputmode="decimal" style="width:120px;" />
-          <input class="bz-input amount" id="loanRemainingCount" placeholder="Preostalo rata" inputmode="numeric" style="width:120px;" />
-          <input class="bz-input amount" id="loanTotalCount" placeholder="Ukupno rata (opciono)" inputmode="numeric" style="width:140px;" />
+          <input class="bz-input amount" id="loanInstallmentAmount" placeholder="Iznos rate" data-i18n-placeholder="installmentAmountPlaceholder" inputmode="decimal" style="width:120px;" />
+          <input class="bz-input amount" id="loanRemainingCount" placeholder="Preostalo rata" data-i18n-placeholder="remainingInstallmentsPlaceholder" inputmode="numeric" style="width:120px;" />
+          <input class="bz-input amount" id="loanTotalCount" placeholder="Ukupno rata (opciono)" data-i18n-placeholder="totalInstallmentsPlaceholder" inputmode="numeric" style="width:140px;" />
         </div>
         <div class="bz-form-row" style="margin-top:8px;">
           <input class="bz-input" id="loanDueDate" type="date" style="width:160px;" />
         </div>
-        <button class="bz-btn" type="submit">Dodaj</button>
+        <button class="bz-btn" type="submit" data-i18n="add">Dodaj</button>
       </form>
     </div>
 
     <div class="bz-panel">
-      <div class="bz-section-title">Aktivne obaveze</div>
-      <div id="loanRows"><div class="bz-empty">Još nema unetih kredita/rata.</div></div>
+      <div class="bz-section-title" data-i18n="activeObligations">Aktivne obaveze</div>
+      <div id="loanRows"><div class="bz-empty" data-i18n="noLoans">Još nema unetih kredita/rata.</div></div>
     </div>
   </div>
 
   <div id="backupView" style="display:none;">
     <div class="bz-panel">
-      <div class="bz-section-title">💾 Backup i izvoz</div>
-      <div class="bz-hint" style="margin-bottom:12px;">Izvozi sve tabove odjednom (Beležnica, Trading212, Krediti, sve što imaš).</div>
-      <button class="bz-btn" id="exportJsonBtn" style="width:100%; margin-bottom:10px;">📦 JSON backup (sigurnosna kopija — za vraćanje)</button>
-      <button class="bz-btn ghost" id="exportXlsxBtn" style="width:100%; margin-top:0; margin-bottom:10px;">📊 Izvezi u Excel (.xlsx)</button>
-      <button class="bz-btn ghost" id="exportPdfBtn" style="width:100%; margin-top:0;">📄 Izvezi u PDF</button>
-      <div class="bz-loading" id="exportLoading" style="display:none;">Pripremam fajl...</div>
+      <div class="bz-section-title" data-i18n="backupExportTitle">💾 Backup i izvoz</div>
+      <div class="bz-hint" style="margin-bottom:12px;" data-i18n="backupExportHint">Izvozi sve tabove odjednom (Beležnica, Trading212, Krediti, sve što imaš).</div>
+      <button class="bz-btn" id="exportJsonBtn" style="width:100%; margin-bottom:10px;" data-i18n="exportJson">📦 JSON backup (sigurnosna kopija — za vraćanje)</button>
+      <button class="bz-btn ghost" id="exportXlsxBtn" style="width:100%; margin-top:0; margin-bottom:10px;" data-i18n="exportXlsx">📊 Izvezi u Excel (.xlsx)</button>
+      <button class="bz-btn ghost" id="exportPdfBtn" style="width:100%; margin-top:0;" data-i18n="exportPdf">📄 Izvezi u PDF</button>
+      <div class="bz-loading" id="exportLoading" style="display:none;" data-i18n="preparingFile">Pripremam fajl...</div>
     </div>
 
     <div class="bz-panel">
-      <div class="bz-section-title">Uvoz / vraćanje iz backupa</div>
-      <div class="bz-hint" style="margin-bottom:12px; color:var(--rust);">Pažnja: vraćanje iz JSON backupa PREPISUJE sve trenutne podatke u aplikaciji onim iz fajla. Koristi samo ako si sigurna/siguran, ili ako si nešto izgubio/la pa se vraćaš na staru kopiju.</div>
+      <div class="bz-section-title" data-i18n="importBackupTitle">Uvoz / vraćanje iz backupa</div>
+      <div class="bz-hint" style="margin-bottom:12px; color:var(--rust);" data-i18n="importBackupWarning">Pažnja: vraćanje iz JSON backupa PREPISUJE sve trenutne podatke u aplikaciji onim iz fajla. Koristi samo ako si sigurna/siguran, ili ako si nešto izgubio/la pa se vraćaš na staru kopiju.</div>
       <input type="file" id="importJsonInput" accept="application/json,.json" style="display:none;" />
-      <button class="bz-btn ghost" id="importJsonBtn" style="width:100%;">⤴ Uvezi JSON backup</button>
+      <button class="bz-btn ghost" id="importJsonBtn" style="width:100%;" data-i18n="importJson">⤴ Uvezi JSON backup</button>
     </div>
   </div>
 
   <div id="insightsView" style="display:none;">
     <div class="bz-panel">
-      <div class="bz-section-title">📊 Analiza troškova</div>
-      <div class="bz-hint" style="margin-bottom:12px;">Postavi pitanje o svojoj potrošnji u ovom tabu — ništa se ne čuva, samo prikaz. Probaj npr: „koliko trošim na kladionicu“, „kojim danima najviše trošim“, „po mesecima“, „po računima“.</div>
+      <div class="bz-section-title" data-i18n="analyticsTitle">📊 Analiza troškova</div>
+      <div class="bz-hint" style="margin-bottom:12px;" data-i18n="analyticsHint">Postavi pitanje o svojoj potrošnji u ovom tabu — ništa se ne čuva, samo prikaz. Probaj npr: &bdquo;koliko trošim na kladionicu&ldquo;, &bdquo;kojim danima najviše trošim&ldquo;, &bdquo;po mesecima&ldquo;, &bdquo;po računima&ldquo;.</div>
       <div class="bz-form-row">
-        <input class="bz-input desc" id="insightQuery" placeholder="Šta te zanima?" />
-        <button class="bz-btn" style="margin-top:0;" id="insightAskBtn">Prikaži</button>
+        <input class="bz-input desc" id="insightQuery" placeholder="Šta te zanima?" data-i18n-placeholder="insightQueryPlaceholder" />
+        <button class="bz-btn" style="margin-top:0;" id="insightAskBtn" data-i18n="show">Prikaži</button>
       </div>
       <div id="insightResult" style="margin-top:16px; display:none;">
         <div id="insightSummary" style="font-size:13px; margin-bottom:10px;"></div>
         <canvas id="insightCanvas" width="600" height="320" style="width:100%; height:auto; background:var(--surface2); border-radius:4px;"></canvas>
-        <button class="bz-btn ghost" id="insightDownloadBtn" style="margin-top:10px; width:100%;">⬇ Preuzmi kao sliku</button>
+        <button class="bz-btn ghost" id="insightDownloadBtn" style="margin-top:10px; width:100%;" data-i18n="downloadImage">⬇ Preuzmi kao sliku</button>
       </div>
     </div>
-    <button class="bz-btn ghost" id="insightBackBtn" style="width:100%;">← Nazad na početnu</button>
+    <button class="bz-btn ghost" id="insightBackBtn" style="width:100%;" data-i18n="backToHome">← Nazad na početnu</button>
   </div>
 
 </div></div>
 
 <div id="backupReminder" style="display:none; position:fixed; bottom:14px; left:14px; right:14px; z-index:120; background:var(--surface); border:1px solid var(--gold); border-radius:6px; padding:12px 14px; max-width:460px; margin:0 auto;">
-  <div style="font-size:13px; margin-bottom:8px;">💾 Kraj meseca je — vreme za backup podataka?</div>
+  <div style="font-size:13px; margin-bottom:8px;" data-i18n="backupReminderMsg">💾 Kraj meseca je — vreme za backup podataka?</div>
   <div style="display:flex; gap:8px;">
-    <button class="bz-btn" id="backupReminderDoBtn" style="margin-top:0; flex:1;">Preuzmi backup sada</button>
-    <button class="bz-btn ghost" id="backupReminderLaterBtn" style="margin-top:0; flex:1;">Podseti kasnije</button>
+    <button class="bz-btn" id="backupReminderDoBtn" style="margin-top:0; flex:1;" data-i18n="downloadBackupNow">Preuzmi backup sada</button>
+    <button class="bz-btn ghost" id="backupReminderLaterBtn" style="margin-top:0; flex:1;" data-i18n="remindLater">Podseti kasnije</button>
   </div>
 </div>
 
@@ -533,20 +533,20 @@
     <button id="qrModalCloseBtn" style="position:absolute; top:-8px; right:-8px; z-index:2; background:var(--gold); color:#14170F; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; cursor:pointer;">×</button>
 
     <div id="qrModalConfirmStage" class="bz-panel">
-      <div class="bz-section-title">Fiskalni račun prepoznat</div>
+      <div class="bz-section-title" data-i18n="fiscalReceiptRecognized">Fiskalni račun prepoznat</div>
       <div class="bz-hint" id="qrResultHint" style="margin-bottom:10px;"></div>
-      <button class="bz-btn ghost" id="qrOpenLinkBtn" type="button" style="width:100%; margin-top:0; margin-bottom:10px; display:none;">🔗 Otvori zvaničnu potvrdu (opciono)</button>
+      <button class="bz-btn ghost" id="qrOpenLinkBtn" type="button" style="width:100%; margin-top:0; margin-bottom:10px; display:none;" data-i18n="openOfficialConfirmation">🔗 Otvori zvaničnu potvrdu (opciono)</button>
       <div class="bz-form-row">
-        <input class="bz-input desc" id="qrDesc" placeholder="Opis" value="Fiskalni račun" />
-        <input class="bz-input amount" id="qrAmount" placeholder="Iznos" inputmode="decimal" />
+        <input class="bz-input desc" id="qrDesc" placeholder="Opis" data-i18n-placeholder="descPlaceholder" value="Fiskalni račun" />
+        <input class="bz-input amount" id="qrAmount" placeholder="Iznos" data-i18n-placeholder="amountPlaceholder" inputmode="decimal" />
       </div>
       <div class="bz-form-row" style="margin-top:8px;">
         <select class="bz-input" id="qrCategory" style="flex:1;"></select>
         <select class="bz-input" id="qrPaymentMethod" style="flex:1;"></select>
       </div>
       <div class="bz-form-row" style="margin-top:12px;">
-        <button class="bz-btn" id="qrAddBtn" style="flex:1;">Dodaj transakciju</button>
-        <button class="bz-btn ghost" style="margin-top:0; flex:1;" id="qrCancelBtn">Otkaži</button>
+        <button class="bz-btn" id="qrAddBtn" style="flex:1;" data-i18n="addTransaction">Dodaj transakciju</button>
+        <button class="bz-btn ghost" style="margin-top:0; flex:1;" id="qrCancelBtn" data-i18n="cancel">Otkaži</button>
       </div>
     </div>
   </div>
@@ -2261,7 +2261,8 @@
     var sorted = sortedAll.slice(0, state.visibleCount);
     var txContainer = document.getElementById("txRows");
     if (sorted.length === 0) {
-      txContainer.innerHTML = '<div class="bz-empty">' + (state.categoryFilter || state.paymentFilter || q ? "Nema transakcija koje odgovaraju filteru." : "Još nema unetih transakcija.") + '</div>';
+      var _emptyKey = (state.categoryFilter || state.paymentFilter || q) ? "noTransactionsFilter" : "noTransactions";
+      txContainer.innerHTML = '<div class="bz-empty" data-i18n="' + _emptyKey + '">' + (state.categoryFilter || state.paymentFilter || q ? "Nema transakcija koje odgovaraju filteru." : "Još nema unetih transakcija.") + '</div>';
     } else {
       txContainer.innerHTML = sorted.map(function (t) {
         var color = state.categories[t.category] || "#8FA08F";
@@ -2906,6 +2907,273 @@
     var current = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
     applyTheme(current === "light" ? "dark" : "light");
   });
+
+  // ==================== LANGUAGE SYSTEM ====================
+  var TRANSLATIONS = {
+    sr: {
+      tabs: "Tabovi",
+      drawerAnalytics: "📊 Analiza",
+      drawerBackup: "💾 Backup / Izvoz",
+      appSub: "lični dnevnik prihoda i troškova · automatska kategorizacija",
+      prevMonth: "Prethodni mesec",
+      nextMonth: "Sledeći mesec",
+      thisMonth: "Ovaj mesec",
+      balance: "Stanje 🔒",
+      income: "Prihodi 🔒",
+      expenses: "Rashodi",
+      monthlyBills: "Mesečni računi",
+      monthlyBillsHint: "Uvek isti računi — samo upiši cifru za ovaj mesec.",
+      saveMonthlyBills: "Sačuvaj mesečne račune",
+      addTransaction: "Dodaj transakciju",
+      descPlaceholder: "Opis",
+      amountPlaceholder: "Iznos",
+      expense: "Trošak",
+      incomeBtn: "Prihod",
+      add: "Dodaj",
+      fromImage: "📷 Sa slike",
+      importQrGallery: "🖼️ Uvezi QR sa slike (galerija)",
+      readingImage: "Čitam sliku...",
+      readingQr: "Čitam QR kod...",
+      reviewItems: "Pregled prepoznatih stavki — proveri pre uvoza",
+      ocrHint: "OCR nije savršen — ispravi opis/iznos gde treba, isključi štiklu ako nešto ne valja, izaberi trošak/prihod i kategoriju.",
+      importSelected: "Uvezi izabrano",
+      cancel: "Otkaži",
+      allTransactions: "Sve transakcije",
+      searchPlaceholder: "Pretraži po opisu ili načinu plaćanja...",
+      allCategories: "Sve kategorije",
+      allAccounts: "Svi računi",
+      clear: "Očisti",
+      noTransactions: "Još nema unetih transakcija.",
+      noTransactionsFilter: "Nema transakcija koje odgovaraju filteru.",
+      recurringTitle: "🔁 Ponavljajuće transakcije",
+      recurringHint: "Za stavke koje se ponavljaju svakog meseca (pretplate, rate, plata). Ne dodaje se automatski — dugme te podseti kad dođe novi mesec.",
+      recurringDescPlaceholder: "Opis (npr. Netflix)",
+      dayPlaceholder: "Dan (1-31)",
+      indefinite: "Do daljnjeg",
+      limited: "Ograničeno",
+      monthsPlaceholder: "Broj meseci",
+      addRecurring: "Dodaj ponavljajuću stavku",
+      transferTitle: "🔄 Prenos / podizanje keša",
+      transferHint: "Prebacuje novac između tvojih računa (npr. podizanje keša sa kartice). Ne računa se kao trošak niti prihod.",
+      executeTransfer: "Izvrši prenos",
+      categories: "Kategorije",
+      categoriesHint: "Strelicama menjaš redosled u padajućim menijima.",
+      newCategoryPlaceholder: "Nova kategorija (npr. Radna prodavnica)",
+      accountsCards: "Računi i kartice",
+      accountsHint: "Ukloni × ako ugasiš račun/karticu — ne briše postojeće transakcije, samo je uklanja iz izbora za nove.",
+      newAccountPlaceholder: "Novi račun/kartica",
+      debtsTitle: "💸 Zaduženja",
+      debtsHint: "Ko duguje tebi, i kome duguješ ti. Ostaje otvoreno dok se ne otplati u potpunosti — možeš uplaćivati deo po deo.",
+      owedToMe: "Duguju meni",
+      iOwe: "Ja dugujem",
+      net: "Neto",
+      personNamePlaceholder: "Ime osobe",
+      iOweBtn: "Ja dugujem",
+      owedToMeBtn: "Duguje meni",
+      addDebt: "Dodaj zaduženje",
+      wishlistTitle: "🎁 Lista želja",
+      wishlistHint: "Ostaje na listi dok ne štikliraš da si završio/la — automatski se prenosi u naredni period.",
+      wishlistPlaceholder: "Šta želiš da kupiš / uradiš?",
+      expensesByCategory: "Rashodi po kategoriji",
+      showExpensesByPayment: "Prikaži rashode po načinu plaćanja ▾",
+      showAccountBalances: "Prikaži stanje po računima ▾",
+      accountBalancesHint: "Ukupno stanje po računu/kartici (sve transakcije i prenosi, ne samo ovaj mesec).",
+      budgetLimits: "🎯 Budžetski limiti",
+      budgetHint: "Opciono — postavi mesečni limit za kategorije koje želiš da pratiš. Traka pokazuje koliko si potrošio od limita.",
+      limitRsd: "Limit RSD",
+      set: "Postavi",
+      monthlyObligation: "Mesečna obaveza",
+      totalRemaining: "Ukupno preostalo",
+      addLoan: "Dodaj kredit / rate na kupovinu",
+      loanNamePlaceholder: "Naziv (npr. Patike, Studentski kredit)",
+      installmentAmountPlaceholder: "Iznos rate",
+      remainingInstallmentsPlaceholder: "Preostalo rata",
+      totalInstallmentsPlaceholder: "Ukupno rata (opciono)",
+      activeObligations: "Aktivne obaveze",
+      noLoans: "Još nema unetih kredita/rata.",
+      backupExportTitle: "💾 Backup i izvoz",
+      backupExportHint: "Izvozi sve tabove odjednom (Beležnica, Trading212, Krediti, sve što imaš).",
+      exportJson: "📦 JSON backup (sigurnosna kopija — za vraćanje)",
+      exportXlsx: "📊 Izvezi u Excel (.xlsx)",
+      exportPdf: "📄 Izvezi u PDF",
+      preparingFile: "Pripremam fajl...",
+      importBackupTitle: "Uvoz / vraćanje iz backupa",
+      importBackupWarning: "Pažnja: vraćanje iz JSON backupa PREPISUJE sve trenutne podatke u aplikaciji onim iz fajla. Koristi samo ako si sigurna/siguran, ili ako si nešto izgubio/la pa se vraćaš na staru kopiju.",
+      importJson: "⤴ Uvezi JSON backup",
+      analyticsTitle: "📊 Analiza troškova",
+      analyticsHint: "Postavi pitanje o svojoj potrošnji u ovom tabu — ništa se ne čuva, samo prikaz. Probaj npr: 'koliko trošim na kladionicu', 'kojim danima najviše trošim', 'po mesecima', 'po računima'.",
+      insightQueryPlaceholder: "Šta te zanima?",
+      show: "Prikaži",
+      downloadImage: "⬇ Preuzmi kao sliku",
+      backToHome: "← Nazad na početnu",
+      backupReminderMsg: "💾 Kraj meseca je — vreme za backup podataka?",
+      downloadBackupNow: "Preuzmi backup sada",
+      remindLater: "Podseti kasnije",
+      fiscalReceiptRecognized: "Fiskalni račun prepoznat",
+      openOfficialConfirmation: "🔗 Otvori zvaničnu potvrdu (opciono)"
+    },
+    en: {
+      tabs: "Tabs",
+      drawerAnalytics: "📊 Analytics",
+      drawerBackup: "💾 Backup / Export",
+      appSub: "personal income and expense journal · automatic categorization",
+      prevMonth: "Previous month",
+      nextMonth: "Next month",
+      thisMonth: "This month",
+      balance: "Balance 🔒",
+      income: "Income 🔒",
+      expenses: "Expenses",
+      monthlyBills: "Monthly bills",
+      monthlyBillsHint: "Same bills every month — just enter this month's amount.",
+      saveMonthlyBills: "Save monthly bills",
+      addTransaction: "Add transaction",
+      descPlaceholder: "Description",
+      amountPlaceholder: "Amount",
+      expense: "Expense",
+      incomeBtn: "Income",
+      add: "Add",
+      fromImage: "📷 From image",
+      importQrGallery: "🖼️ Import QR from image (gallery)",
+      readingImage: "Reading image...",
+      readingQr: "Reading QR code...",
+      reviewItems: "Review recognized items — check before importing",
+      ocrHint: "OCR isn't perfect — fix description/amount where needed, uncheck if something is wrong, choose expense/income and category.",
+      importSelected: "Import selected",
+      cancel: "Cancel",
+      allTransactions: "All transactions",
+      searchPlaceholder: "Search by description or payment method...",
+      allCategories: "All categories",
+      allAccounts: "All accounts",
+      clear: "Clear",
+      noTransactions: "No transactions entered yet.",
+      noTransactionsFilter: "No transactions match the filter.",
+      recurringTitle: "🔁 Recurring transactions",
+      recurringHint: "For items that repeat every month (subscriptions, installments, salary). Not added automatically — the button reminds you when a new month comes.",
+      recurringDescPlaceholder: "Description (e.g. Netflix)",
+      dayPlaceholder: "Day (1-31)",
+      indefinite: "Indefinite",
+      limited: "Limited",
+      monthsPlaceholder: "Number of months",
+      addRecurring: "Add recurring item",
+      transferTitle: "🔄 Transfer / cash withdrawal",
+      transferHint: "Transfers money between your accounts (e.g. cash withdrawal from card). Not counted as expense or income.",
+      executeTransfer: "Execute transfer",
+      categories: "Categories",
+      categoriesHint: "Use arrows to change the order in dropdown menus.",
+      newCategoryPlaceholder: "New category (e.g. Work shop)",
+      accountsCards: "Accounts and cards",
+      accountsHint: "Remove × if you close an account/card — doesn't delete existing transactions, just removes it from selection for new ones.",
+      newAccountPlaceholder: "New account/card",
+      debtsTitle: "💸 Debts",
+      debtsHint: "Who owes you, and who you owe. Stays open until fully paid — you can pay in installments.",
+      owedToMe: "Owed to me",
+      iOwe: "I owe",
+      net: "Net",
+      personNamePlaceholder: "Person's name",
+      iOweBtn: "I owe",
+      owedToMeBtn: "Owes me",
+      addDebt: "Add debt",
+      wishlistTitle: "🎁 Wish list",
+      wishlistHint: "Stays on the list until you check it off — automatically carried over to the next period.",
+      wishlistPlaceholder: "What do you want to buy / do?",
+      expensesByCategory: "Expenses by category",
+      showExpensesByPayment: "Show expenses by payment method ▾",
+      showAccountBalances: "Show account balances ▾",
+      accountBalancesHint: "Total balance per account/card (all transactions and transfers, not just this month).",
+      budgetLimits: "🎯 Budget limits",
+      budgetHint: "Optional — set a monthly limit for categories you want to track. The bar shows how much of the limit you've spent.",
+      limitRsd: "Limit RSD",
+      set: "Set",
+      monthlyObligation: "Monthly obligation",
+      totalRemaining: "Total remaining",
+      addLoan: "Add loan / installment purchase",
+      loanNamePlaceholder: "Name (e.g. Sneakers, Student loan)",
+      installmentAmountPlaceholder: "Installment amount",
+      remainingInstallmentsPlaceholder: "Remaining installments",
+      totalInstallmentsPlaceholder: "Total installments (optional)",
+      activeObligations: "Active obligations",
+      noLoans: "No loans/installments entered yet.",
+      backupExportTitle: "💾 Backup and export",
+      backupExportHint: "Export all tabs at once (Notebook, Trading212, Loans, everything you have).",
+      exportJson: "📦 JSON backup (safety copy — for restoring)",
+      exportXlsx: "📊 Export to Excel (.xlsx)",
+      exportPdf: "📄 Export to PDF",
+      preparingFile: "Preparing file...",
+      importBackupTitle: "Import / restore from backup",
+      importBackupWarning: "Warning: restoring from JSON backup OVERWRITES all current data in the app with data from the file. Only use if you're sure, or if you lost something and are restoring an old copy.",
+      importJson: "⤴ Import JSON backup",
+      analyticsTitle: "📊 Expense analysis",
+      analyticsHint: "Ask a question about your spending in this tab — nothing is saved, display only. Try: 'how much do I spend on betting', 'which days I spend most', 'by month', 'by account'.",
+      insightQueryPlaceholder: "What interests you?",
+      show: "Show",
+      downloadImage: "⬇ Download as image",
+      backToHome: "← Back to home",
+      backupReminderMsg: "💾 End of month — time to back up your data?",
+      downloadBackupNow: "Download backup now",
+      remindLater: "Remind me later",
+      fiscalReceiptRecognized: "Fiscal receipt recognized",
+      openOfficialConfirmation: "🔗 Open official confirmation (optional)"
+    }
+  };
+
+  function applyLang(lang) {
+    var t = TRANSLATIONS[lang] || TRANSLATIONS["sr"];
+
+    // Update elements with data-i18n attribute (textContent)
+    var i18nEls = document.querySelectorAll("[data-i18n]");
+    Array.prototype.forEach.call(i18nEls, function (el) {
+      var key = el.getAttribute("data-i18n");
+      if (t[key] !== undefined) el.textContent = t[key];
+    });
+
+    // Update elements with data-i18n-placeholder attribute
+    var placeholderEls = document.querySelectorAll("[data-i18n-placeholder]");
+    Array.prototype.forEach.call(placeholderEls, function (el) {
+      var key = el.getAttribute("data-i18n-placeholder");
+      if (t[key] !== undefined) el.placeholder = t[key];
+    });
+
+    // Update elements with data-i18n-title attribute
+    var titleEls = document.querySelectorAll("[data-i18n-title]");
+    Array.prototype.forEach.call(titleEls, function (el) {
+      var key = el.getAttribute("data-i18n-title");
+      if (t[key] !== undefined) el.title = t[key];
+    });
+
+    // Update the first option in filter selects (they get re-rendered, update the static ones)
+    var filterCat = document.getElementById("filterCategorySelect");
+    if (filterCat && filterCat.options[0] && filterCat.options[0].value === "") {
+      filterCat.options[0].textContent = t["allCategories"];
+    }
+    var filterPay = document.getElementById("filterPaymentSelect");
+    if (filterPay && filterPay.options[0] && filterPay.options[0].value === "") {
+      filterPay.options[0].textContent = t["allAccounts"];
+    }
+
+    // Update the empty state in txRows if currently showing the no-transactions message
+    var txRows = document.getElementById("txRows");
+    if (txRows) {
+      var emptyEl = txRows.querySelector(".bz-empty[data-i18n='noTransactions']");
+      if (emptyEl) emptyEl.textContent = t["noTransactions"];
+    }
+
+    // Update lang toggle button flag
+    var btn = document.getElementById("langToggleBtn");
+    if (btn) btn.textContent = lang === "sr" ? "🇬🇧" : "🇷🇸";
+
+    document.documentElement.lang = lang;
+    try { localStorage.setItem("bz_lang", lang); } catch(e) {}
+  }
+
+  var currentLang = "sr";
+  try { currentLang = localStorage.getItem("bz_lang") || "sr"; } catch(e) {}
+  var _origRender = render;
+  render = function() { _origRender(); applyLang(currentLang); };
+  document.getElementById("langToggleBtn").addEventListener("click", function () {
+    currentLang = currentLang === "sr" ? "en" : "sr";
+    applyLang(currentLang);
+  });
+  // ==================== END LANGUAGE SYSTEM ====================
 
   render();
 
